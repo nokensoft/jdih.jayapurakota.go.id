@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dasbor — JDIH Kota Jayapura</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/kotajayapura-logo.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="assets/js/data-dokumen.js"></script>
+  <script src="assets/js/store.js"></script>
+  <!-- Proteksi halaman (simulasi): wajib login -->
+  <script>if (!JDIH.currentUser()) location.replace('login.html');</script>
+  <style>
+    [x-cloak]{display:none!important}
+    .field{width:100%;border:1px solid #e2e8f0;border-radius:.375rem;padding:.55rem .75rem;background:#fff;font-size:.9rem}
+    .field:focus{outline:none;border-color:#0d47a1;box-shadow:0 0 0 3px #e8f1fd}
+  </style>
+</head>
+<body class="font-sans bg-slate-100 text-slate-700 antialiased" x-data="admin()" @keydown.escape.window="closeModals()">
+
+  <div class="min-h-screen lg:flex">
+
+    <!-- ================= SIDEBAR ================= -->
+    <div x-show="sidebar" x-cloak x-transition.opacity @click="sidebar=false" class="fixed inset-0 bg-slate-900/50 z-30 lg:hidden"></div>
+    <aside class="fixed lg:sticky top-0 left-0 z-40 h-screen w-64 shrink-0 overflow-hidden bg-navy-950 text-white transition-all duration-300 lg:translate-x-0"
+           :class="[sidebar ? 'translate-x-0' : '-translate-x-full', collapsed ? 'lg:w-0' : 'lg:w-64']">
+     <div class="w-64 h-full flex flex-col">
+      <a href="index.html" class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
+        <img src="assets/kotajayapura-logo.png" alt="" class="h-10 w-auto">
+        <div class="leading-tight">
+          <p class="font-extrabold">JDIH Kota Jayapura</p>
+          <p class="text-xs text-white/60">Panel Pengelola</p>
+        </div>
+      </a>
+      <nav class="flex-1 p-3 space-y-1 text-sm font-bold">
+        <template x-for="m in visibleMenu" :key="m.id">
+          <a :href="'#' + m.id" @click="sidebar=false"
+             class="flex items-center gap-3 px-4 py-3 rounded transition-colors"
+             :class="tab===m.id ? 'bg-navy-700 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'">
+            <span class="w-5 text-center" :class="tab===m.id ? 'text-orange-400' : ''"><i :class="m.icon"></i></span>
+            <span x-text="m.label"></span>
+          </a>
+        </template>
+      </nav>
+      <div class="p-3 border-t border-white/10 text-sm font-bold space-y-1">
+        <button @click="toggleSidebar()" class="w-full flex items-center gap-3 px-4 py-3 rounded text-white/75 hover:bg-white/10 hover:text-white">
+          <span class="w-5 text-center"><i class="fa-solid fa-angles-left"></i></span>Sembunyikan Sidebar
+        </button>
+        <a href="index.html" target="_blank" class="flex items-center gap-3 px-4 py-3 rounded text-white/75 hover:bg-white/10 hover:text-white">
+          <span class="w-5 text-center"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>Lihat Situs
+        </a>
+        <button @click="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded text-white/75 hover:bg-white/10 hover:text-white">
+          <span class="w-5 text-center"><i class="fa-solid fa-right-from-bracket"></i></span>Keluar
+        </button>
+      </div>
+     </div>
+    </aside>
+
+    <!-- ================= AREA UTAMA ================= -->
+    <div class="flex-1 min-w-0 flex flex-col">
+      <header class="sticky top-0 z-20 bg-white border-b border-slate-200">
+        <div class="px-4 sm:px-6 h-16 flex items-center gap-4">
+          <button @click="toggleSidebar()" class="w-10 h-10 shrink-0 rounded border border-slate-200 text-navy-700 hover:bg-slate-50"
+                  :title="sidebarVisible() ? 'Sembunyikan sidebar' : 'Tampilkan sidebar'" aria-label="Tampilkan/sembunyikan sidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <h1 class="text-lg sm:text-xl font-extrabold text-navy-800" x-text="currentMenu.label"></h1>
+          <div class="ml-auto flex items-center gap-3">
+            <button type="button" onclick="JDIH_THEME.toggle()" title="Ganti mode terang/gelap" aria-label="Ganti mode terang/gelap"
+                    class="w-10 h-10 shrink-0 rounded border border-slate-200 text-navy-700 hover:bg-slate-50">
+              <span class="theme-icon-moon"><i class="fa-solid fa-moon"></i></span>
+              <span class="theme-icon-sun"><i class="fa-solid fa-sun text-orange-400"></i></span>
+            </button>
+            <span class="hidden sm:inline text-xs font-bold px-2 py-1 rounded bg-orange-50 text-orange-600">SIMULASI</span>
+            <div class="text-right leading-tight hidden sm:block">
+              <p class="text-sm font-bold text-slate-800" x-text="user.name"></p>
+              <p class="text-xs text-slate-500" x-text="user.roleLabel"></p>
+            </div>
+            <span class="w-9 h-9 rounded-full bg-navy-700 text-white grid place-items-center font-extrabold" x-text="user.name.charAt(0)"></span>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 p-4 sm:p-6">
+
+        <!-- ========== RINGKASAN ========== -->
+        <section x-show="tab==='ringkasan'" class="space-y-6">
+          <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+            <template x-for="t in tiles" :key="t.label">
+              <div class="bg-white rounded-lg shadow-sm p-5 border-l-4 border-navy-800">
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-bold uppercase tracking-wider text-slate-500" x-text="t.label"></p>
+                  <span class="text-orange-500"><i :class="t.icon"></i></span>
+                </div>
+                <p class="mt-2 text-3xl font-extrabold text-navy-800" x-text="JDIH.formatNumber(t.value)"></p>
+              </div>
+            </template>
+          </div>
+
+          <div class="grid xl:grid-cols-2 gap-6">
+            <!-- Dokumen per kategori -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="font-extrabold text-navy-800">Dokumen per Kategori</h2>
+              <ul class="mt-5 space-y-4">
+                <template x-for="c in categoryStats" :key="c.code">
+                  <li :title="c.name + ': ' + c.count + ' dokumen'">
+                    <div class="flex justify-between text-sm">
+                      <span class="text-slate-600" x-text="c.name"></span>
+                      <span class="font-bold text-slate-800" x-text="c.count"></span>
+                    </div>
+                    <div class="mt-1.5 h-2.5 rounded-full bg-slate-100">
+                      <div class="h-full rounded-full bg-navy-700 transition-all" :style="`width:${c.pct}%`"></div>
+                    </div>
+                  </li>
+                </template>
+              </ul>
+            </div>
+
+            <!-- Terpopuler -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="font-extrabold text-navy-800">Paling Banyak Diunduh</h2>
+              <ol class="mt-3 divide-y divide-slate-100">
+                <template x-for="(d, i) in popular" :key="d.id">
+                  <li class="py-3 flex items-start gap-3">
+                    <span class="w-6 h-6 shrink-0 rounded-full bg-brand-50 text-navy-800 text-xs font-extrabold grid place-items-center" x-text="i+1"></span>
+                    <a :href="'detail.html?id=' + d.id" target="_blank" class="flex-1 text-sm font-semibold text-slate-800 hover:text-navy-700 line-clamp-2" x-text="d.title"></a>
+                    <span class="text-sm font-bold text-slate-500 whitespace-nowrap" x-text="JDIH.formatNumber(d.downloads)"></span>
+                  </li>
+                </template>
+              </ol>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between gap-4">
+              <h2 class="font-extrabold text-navy-800">Dokumen Terbaru</h2>
+              <a href="#dokumen" class="text-sm font-bold text-navy-700 hover:underline">Kelola dokumen <i class="fa-solid fa-arrow-right ml-1"></i></a>
+            </div>
+            <ul class="mt-3 divide-y divide-slate-100">
+              <template x-for="d in recent" :key="d.id">
+                <li class="py-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                  <span class="px-2 py-0.5 rounded bg-brand-50 text-navy-700 text-xs font-extrabold" x-text="d.type"></span>
+                  <span x-show="d.contoh" class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs font-bold" title="Dokumen contoh untuk simulasi">Contoh</span>
+                  <span class="flex-1 min-w-[12rem] font-semibold text-slate-800" x-text="d.title"></span>
+                  <span class="text-slate-500" x-text="JDIH.formatDate(d.date)"></span>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ========== DOKUMEN ========== -->
+        <section x-show="tab==='dokumen'" x-cloak class="bg-white rounded-lg shadow-sm">
+          <div class="p-4 sm:p-5 flex flex-wrap items-center gap-3 border-b border-slate-100">
+            <div class="flex items-center border border-slate-200 rounded flex-1 min-w-[14rem] focus-within:border-navy-700">
+              <i class="fa-solid fa-magnifying-glass text-slate-400 px-3"></i>
+              <input x-model.debounce.200ms="docQuery" type="search" placeholder="Cari judul, nomor, tahun..." class="flex-1 min-w-0 py-2 pr-3 text-sm focus:outline-none">
+            </div>
+            <select x-model="docType" class="field !w-auto">
+              <option value="">Semua Kategori</option>
+              <template x-for="c in db.categories" :key="c.code"><option :value="c.code" x-text="c.name"></option></template>
+            </select>
+            <select x-model="docStatus" class="field !w-auto">
+              <option value="">Semua Status</option>
+              <template x-for="s in JDIH.STATUSES" :key="s"><option :value="s" x-text="s"></option></template>
+            </select>
+            <button @click="openDocForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-4 py-2.5 rounded whitespace-nowrap">
+              <i class="fa-solid fa-plus mr-1.5"></i>Tambah Dokumen
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th class="px-5 py-3 font-bold">Dokumen</th>
+                  <th class="px-5 py-3 font-bold whitespace-nowrap">Tgl. Penetapan</th>
+                  <th class="px-5 py-3 font-bold">Status</th>
+                  <th class="px-5 py-3 font-bold text-right">Unduhan</th>
+                  <th class="px-5 py-3 font-bold text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <template x-for="d in docsPaged" :key="d.id">
+                  <tr class="hover:bg-slate-50 align-top">
+                    <td class="px-5 py-4 min-w-[18rem]">
+                      <span class="px-2 py-0.5 rounded bg-brand-50 text-navy-700 text-xs font-extrabold" x-text="d.type"></span>
+                      <span x-show="d.contoh" class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs font-bold" title="Dokumen contoh untuk simulasi">Contoh</span>
+                      <p class="mt-1.5 font-semibold text-slate-800" x-text="d.title"></p>
+                      <p class="text-xs text-slate-500 mt-0.5">No. <span x-text="d.number || '-'"></span> · Tahun <span x-text="d.year"></span></p>
+                    </td>
+                    <td class="px-5 py-4 whitespace-nowrap" x-text="JDIH.formatDate(d.date)"></td>
+                    <td class="px-5 py-4"><span class="text-xs font-bold px-2 py-0.5 rounded-full" :class="statusClass(d.status)" x-text="d.status"></span></td>
+                    <td class="px-5 py-4 text-right" x-text="JDIH.formatNumber(d.downloads)"></td>
+                    <td class="px-5 py-4">
+                      <div class="flex justify-end gap-1">
+                        <a :href="'detail.html?id=' + d.id" target="_blank" title="Lihat" class="w-8 h-8 grid place-items-center rounded text-slate-500 hover:bg-slate-100 hover:text-navy-700"><i class="fa-solid fa-eye"></i></a>
+                        <button @click="openDocForm(d)" title="Ubah" class="w-8 h-8 grid place-items-center rounded text-slate-500 hover:bg-slate-100 hover:text-navy-700"><i class="fa-solid fa-pen"></i></button>
+                        <button @click="confirmDeleteDoc(d)" title="Hapus" class="w-8 h-8 grid place-items-center rounded text-slate-500 hover:bg-red-50 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="docsFiltered.length===0">
+                  <td colspan="5" class="px-5 py-12 text-center text-slate-500">Tidak ada dokumen yang cocok.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-4 sm:px-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 text-sm">
+            <p class="text-slate-500">
+              Menampilkan <b x-text="docsPaged.length"></b> dari <b x-text="docsFiltered.length"></b> dokumen
+            </p>
+            <div class="flex gap-1" x-show="docPages > 1">
+              <button @click="docPage--" :disabled="docPage===1" class="px-3 py-1.5 rounded border border-slate-200 disabled:opacity-40">Sebelumnya</button>
+              <span class="px-3 py-1.5" x-text="docPage + ' / ' + docPages"></span>
+              <button @click="docPage++" :disabled="docPage===docPages" class="px-3 py-1.5 rounded border border-slate-200 disabled:opacity-40">Berikutnya</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== KATEGORI ========== -->
+        <section x-show="tab==='kategori'" x-cloak class="grid lg:grid-cols-3 gap-6 items-start">
+          <div class="lg:col-span-2 bg-white rounded-lg shadow-sm">
+            <div class="p-5 border-b border-slate-100">
+              <h2 class="font-extrabold text-navy-800">Daftar Kategori</h2>
+              <p class="text-sm text-slate-500 mt-1">Kategori tampil sebagai menu navigasi utama situs publik.</p>
+            </div>
+            <ul class="divide-y divide-slate-100">
+              <template x-for="(c, i) in db.categories" :key="c.code">
+                <li class="px-5 py-3 flex items-center gap-3">
+                  <div class="flex flex-col">
+                    <button @click="moveCategory(i, -1)" :disabled="i===0" class="text-slate-400 hover:text-navy-700 disabled:opacity-30 leading-none" title="Naikkan"><i class="fa-solid fa-chevron-up text-xs"></i></button>
+                    <button @click="moveCategory(i, 1)" :disabled="i===db.categories.length-1" class="text-slate-400 hover:text-navy-700 disabled:opacity-30 leading-none" title="Turunkan"><i class="fa-solid fa-chevron-down text-xs"></i></button>
+                  </div>
+                  <span class="w-20 shrink-0 px-2 py-0.5 rounded bg-brand-50 text-navy-700 text-xs font-extrabold text-center" x-text="c.code"></span>
+                  <template x-if="editCat !== c.code">
+                    <span class="flex-1 font-semibold text-slate-800" x-text="c.name"></span>
+                  </template>
+                  <template x-if="editCat === c.code">
+                    <input x-model="editCatName" @keydown.enter="saveCategoryName(c)" class="field flex-1" x-init="$nextTick(() => $el.focus())">
+                  </template>
+                  <span class="text-xs text-slate-500 whitespace-nowrap"><b x-text="countByType(c.code)"></b> dokumen</span>
+                  <div class="flex gap-1">
+                    <template x-if="editCat !== c.code">
+                      <button @click="editCat=c.code; editCatName=c.name" title="Ubah nama" class="w-8 h-8 grid place-items-center rounded text-slate-500 hover:bg-slate-100 hover:text-navy-700"><i class="fa-solid fa-pen"></i></button>
+                    </template>
+                    <template x-if="editCat === c.code">
+                      <button @click="saveCategoryName(c)" title="Simpan" class="w-8 h-8 grid place-items-center rounded text-emerald-600 hover:bg-emerald-50"><i class="fa-solid fa-check"></i></button>
+                    </template>
+                    <button @click="confirmDeleteCategory(c)" title="Hapus" class="w-8 h-8 grid place-items-center rounded text-slate-500 hover:bg-red-50 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+
+          <form @submit.prevent="addCategory()" class="bg-white rounded-lg shadow-sm p-5 space-y-4">
+            <h2 class="font-extrabold text-navy-800">Tambah Kategori</h2>
+            <label class="block">
+              <span class="text-sm font-bold text-slate-600">Kode</span>
+              <input x-model="newCat.code" @input="newCat.code = newCat.code.toUpperCase().replace(/[^A-Z0-9]/g, '')" maxlength="10" required placeholder="mis. INSTRUKSI" class="field mt-1.5">
+            </label>
+            <label class="block">
+              <span class="text-sm font-bold text-slate-600">Nama Kategori</span>
+              <input x-model="newCat.name" required placeholder="mis. Instruksi Walikota" class="field mt-1.5">
+            </label>
+            <button class="w-full bg-navy-700 hover:bg-navy-900 text-white text-sm font-bold py-2.5 rounded"><i class="fa-solid fa-plus mr-1.5"></i>Tambah</button>
+          </form>
+        </section>
+
+        <!-- ========== PENGGUNA (khusus admin) ========== -->
+        <section x-show="tab==='pengguna'" x-cloak class="grid lg:grid-cols-3 gap-6 items-start">
+          <div class="lg:col-span-2 bg-white rounded-lg shadow-sm">
+            <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="font-extrabold text-navy-800">Daftar Pengguna</h2>
+                <p class="text-sm text-slate-500 mt-1"><span x-text="db.users.length"></span> akun · <span x-text="activeAdmins(db.users)"></span> admin aktif</p>
+              </div>
+              <button @click="openUserForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-4 py-2.5 rounded whitespace-nowrap">
+                <i class="fa-solid fa-user-plus mr-1.5"></i>Tambah Pengguna
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th class="px-5 py-3 font-bold">Pengguna</th>
+                    <th class="px-5 py-3 font-bold">Peran</th>
+                    <th class="px-5 py-3 font-bold">Status</th>
+                    <th class="px-5 py-3 font-bold text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <template x-for="u in db.users" :key="u.id">
+                    <tr class="hover:bg-slate-50">
+                      <td class="px-5 py-4 min-w-[14rem]">
+                        <div class="flex items-center gap-3">
+                          <span class="w-9 h-9 shrink-0 rounded-full grid place-items-center font-extrabold text-white"
+                                :class="u.role==='admin' ? 'bg-navy-700' : 'bg-orange-500'" x-text="u.name.charAt(0).toUpperCase()"></span>
+                          <div class="min-w-0">
+                            <p class="font-semibold text-slate-800">
+                              <span x-text="u.name"></span>
+                              <span x-show="u.id===user.id" class="ml-1 text-xs font-bold text-slate-500">(Anda)</span>
+                            </p>
+                            <p class="text-xs text-slate-500" x-text="'@' + u.username"></p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-5 py-4">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                              :class="u.role==='admin' ? 'bg-brand-50 text-navy-700' : 'bg-orange-50 text-orange-600'"
+                              x-text="(ROLES[u.role] || {}).label || u.role"></span>
+                      </td>
+                      <td class="px-5 py-4">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                              :class="u.active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'"
+                              x-text="u.active ? 'Aktif' : 'Nonaktif'"></span>
+                      </td>
+                      <td class="px-5 py-4">
+                        <div class="flex justify-end gap-1">
+                          <button @click="openUserForm(u)" title="Ubah" class="w-8 h-8 grid place-items-center rounded text-slate-500 hover:bg-slate-100 hover:text-navy-700"><i class="fa-solid fa-pen"></i></button>
+                          <button @click="confirmDeleteUser(u)" title="Hapus" :disabled="u.id===user.id"
+                                  class="w-8 h-8 grid place-items-center rounded text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-30 disabled:pointer-events-none"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-5 space-y-4">
+            <h2 class="font-extrabold text-navy-800">Hak Akses Peran</h2>
+            <template x-for="(r, key) in ROLES" :key="key">
+              <div class="flex gap-3">
+                <span class="w-9 h-9 shrink-0 rounded-full grid place-items-center text-white" :class="key==='admin' ? 'bg-navy-700' : 'bg-orange-500'">
+                  <span x-show="key==='admin'"><i class="fa-solid fa-user-shield"></i></span>
+                  <span x-show="key==='operator'"><i class="fa-solid fa-user-pen"></i></span>
+                </span>
+                <div>
+                  <p class="font-bold text-slate-800" x-text="r.label"></p>
+                  <p class="text-sm text-slate-500" x-text="r.desc"></p>
+                </div>
+              </div>
+            </template>
+            <p class="text-xs text-slate-500 border-t border-slate-100 pt-4">
+              <i class="fa-solid fa-circle-info mr-1"></i>Simulasi: kata sandi tersimpan di browser ini. Pada versi tayang, kata sandi disimpan terenkripsi di server.
+            </p>
+          </div>
+        </section>
+
+        <!-- ========== PENGATURAN ========== -->
+        <section x-show="tab==='pengaturan'" x-cloak class="grid lg:grid-cols-3 gap-6 items-start">
+          <form @submit.prevent="saveSettings()" class="lg:col-span-2 bg-white rounded-lg shadow-sm p-6 space-y-4">
+            <div>
+              <h2 class="font-extrabold text-navy-800">Informasi Kontak</h2>
+              <p class="text-sm text-slate-500 mt-1">Ditampilkan di topbar dan footer situs publik.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label class="block">
+                <span class="text-sm font-bold text-slate-600">Telepon</span>
+                <input x-model="settings.phone" required class="field mt-1.5">
+              </label>
+              <label class="block">
+                <span class="text-sm font-bold text-slate-600">Email</span>
+                <input x-model="settings.email" type="email" required class="field mt-1.5">
+              </label>
+            </div>
+            <label class="block">
+              <span class="text-sm font-bold text-slate-600">Alamat</span>
+              <input x-model="settings.address" required class="field mt-1.5">
+            </label>
+            <div class="pt-2">
+              <button class="bg-navy-700 hover:bg-navy-900 text-white text-sm font-bold px-5 py-2.5 rounded"><i class="fa-solid fa-floppy-disk mr-1.5"></i>Simpan Pengaturan</button>
+            </div>
+          </form>
+
+          <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
+            <h2 class="font-extrabold text-navy-800">Data Prototype</h2>
+            <p class="text-sm text-slate-500">Semua perubahan disimpan di <b>localStorage</b> browser ini dan belum terhubung ke server.</p>
+            <button @click="exportJson()" class="w-full border border-slate-200 hover:border-navy-700 hover:text-navy-700 text-sm font-bold py-2.5 rounded">
+              <i class="fa-solid fa-file-export mr-1.5"></i>Unduh Cadangan (JSON)
+            </button>
+            <button @click="confirmReset()" class="w-full border border-red-200 text-red-600 hover:bg-red-50 text-sm font-bold py-2.5 rounded">
+              <i class="fa-solid fa-rotate-left mr-1.5"></i>Kembalikan Data Contoh
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <!-- ================= FOOTER ================= -->
+      <footer class="border-t border-slate-200 bg-white px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-xs text-slate-500">
+        <p>&copy; <span x-text="new Date().getFullYear()"></span> JDIH Pemerintah Kota Jayapura. All rights reserved.</p>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <a href="status.html" target="_blank" class="inline-flex items-center gap-1.5 hover:text-navy-700">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>Status Sistem
+          </a>
+          <span class="text-slate-300">|</span>
+          <span>Versi 1.0 (prototype)</span>
+          <span class="text-slate-300">|</span>
+          <span class="inline-flex items-center gap-1.5">Powered by
+            <a href="https://nokensoft.com" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 font-bold text-slate-700 hover:text-navy-700">
+              <img src="assets/nokensoft-logo.png" alt="Logo Nokensoft" class="h-4 w-auto">Nokensoft.com
+            </a>
+          </span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ================= MODAL FORM DOKUMEN ================= -->
+  <div x-show="docModal" x-cloak class="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/50" @click="docModal=false"></div>
+    <form @submit.prevent="saveDoc()" x-show="docModal" x-transition
+          class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl my-8">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="text-lg font-extrabold text-navy-800" x-text="form.id ? 'Ubah Dokumen' : 'Tambah Dokumen'"></h2>
+        <button type="button" @click="docModal=false" class="w-8 h-8 rounded hover:bg-slate-100" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-6 grid sm:grid-cols-2 gap-4">
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Kategori <span class="text-red-500">*</span></span>
+          <select x-model="form.type" required class="field mt-1.5">
+            <template x-for="c in db.categories" :key="c.code"><option :value="c.code" x-text="c.name" :selected="c.code===form.type"></option></template>
+          </select>
+        </label>
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Status <span class="text-red-500">*</span></span>
+          <select x-model="form.status" class="field mt-1.5">
+            <template x-for="s in JDIH.STATUSES" :key="s"><option :value="s" x-text="s" :selected="s===form.status"></option></template>
+          </select>
+        </label>
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Nomor</span>
+          <input x-model="form.number" placeholder="mis. 5 atau 188.4/2026" class="field mt-1.5">
+        </label>
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Tanggal Penetapan <span class="text-red-500">*</span></span>
+          <input x-model="form.date" type="date" required class="field mt-1.5">
+        </label>
+        <label class="block sm:col-span-2">
+          <span class="text-sm font-bold text-slate-600">Judul <span class="text-red-500">*</span></span>
+          <textarea x-model="form.title" rows="2" required class="field mt-1.5"></textarea>
+        </label>
+        <label class="block sm:col-span-2">
+          <span class="text-sm font-bold text-slate-600">Ringkasan</span>
+          <textarea x-model="form.desc" rows="3" class="field mt-1.5"></textarea>
+        </label>
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Sumber</span>
+          <input x-model="form.source" placeholder="mis. Lembaran Daerah Tahun 2025 Nomor 1" class="field mt-1.5">
+        </label>
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Subjek</span>
+          <input x-model="form.subject" placeholder="mis. Pajak dan Retribusi Daerah" class="field mt-1.5">
+        </label>
+        <div class="sm:col-span-2">
+          <span class="text-sm font-bold text-slate-600">Berkas PDF</span>
+          <label class="mt-1.5 flex items-center gap-3 border-2 border-dashed border-slate-200 rounded px-4 py-3 cursor-pointer hover:border-navy-700">
+            <i class="fa-solid fa-file-pdf text-2xl text-red-400"></i>
+            <span class="text-sm flex-1 min-w-0 truncate"
+                  x-text="form.uploadName ? form.uploadName + ' (simulasi unggah)' : (form.file || 'Pilih berkas PDF (simulasi — berkas tidak benar-benar diunggah)')"></span>
+            <input type="file" accept="application/pdf" class="hidden" @change="if ($event.target.files[0]) form.uploadName = $event.target.files[0].name">
+          </label>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button type="button" @click="docModal=false" class="px-4 py-2.5 rounded border border-slate-200 text-sm font-bold hover:bg-slate-50">Batal</button>
+        <button class="px-5 py-2.5 rounded bg-navy-700 hover:bg-navy-900 text-white text-sm font-bold">Simpan</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================= MODAL FORM PENGGUNA ================= -->
+  <div x-show="userModal" x-cloak class="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/50" @click="userModal=false"></div>
+    <form @submit.prevent="saveUser()" x-show="userModal" x-transition class="relative w-full max-w-lg bg-white rounded-lg shadow-xl my-8">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="text-lg font-extrabold text-navy-800" x-text="userForm.id ? 'Ubah Pengguna' : 'Tambah Pengguna'"></h2>
+        <button type="button" @click="userModal=false" class="w-8 h-8 rounded hover:bg-slate-100" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Nama Lengkap <span class="text-red-500">*</span></span>
+          <input x-model="userForm.name" required placeholder="mis. Operator Bagian Hukum" class="field mt-1.5">
+        </label>
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Nama Pengguna <span class="text-red-500">*</span></span>
+          <input x-model="userForm.username" required autocomplete="off" placeholder="huruf kecil, mis. operator2" class="field mt-1.5">
+        </label>
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">
+            Kata Sandi <span x-show="!userForm.id" class="text-red-500">*</span>
+            <span x-show="userForm.id" class="font-normal text-slate-500">(kosongkan bila tidak diubah)</span>
+          </span>
+          <div class="mt-1.5 flex">
+            <input x-model="userForm.password" :type="showPw ? 'text' : 'password'" :required="!userForm.id" autocomplete="new-password"
+                   placeholder="minimal 6 karakter" class="field !rounded-r-none">
+            <button type="button" @click="showPw=!showPw" class="px-3 border border-l-0 border-slate-200 rounded-r text-slate-500 hover:text-navy-700" aria-label="Tampilkan kata sandi">
+              <span x-show="!showPw"><i class="fa-solid fa-eye"></i></span>
+              <span x-show="showPw" x-cloak><i class="fa-solid fa-eye-slash"></i></span>
+            </button>
+          </div>
+        </label>
+        <div>
+          <span class="text-sm font-bold text-slate-600">Peran <span class="text-red-500">*</span></span>
+          <div class="mt-1.5 grid grid-cols-2 gap-2">
+            <template x-for="(r, key) in ROLES" :key="key">
+              <label class="flex items-start gap-2.5 border rounded px-3 py-2.5 cursor-pointer"
+                     :class="userForm.role===key ? 'border-navy-700 bg-brand-50' : 'border-slate-200'">
+                <input type="radio" name="role" :value="key" x-model="userForm.role" :disabled="userForm.id===user.id" class="mt-1 accent-navy-700">
+                <span>
+                  <span class="block text-sm font-bold text-slate-800" x-text="r.label"></span>
+                  <span class="block text-xs text-slate-500" x-text="r.desc"></span>
+                </span>
+              </label>
+            </template>
+          </div>
+        </div>
+        <label class="flex items-center gap-2.5" :class="userForm.id===user.id && 'opacity-50'">
+          <input type="checkbox" x-model="userForm.active" :disabled="userForm.id===user.id" class="w-4 h-4 accent-navy-700">
+          <span class="text-sm font-bold text-slate-600">Akun aktif (boleh masuk)</span>
+        </label>
+        <p x-show="userForm.id===user.id" class="text-xs text-slate-500"><i class="fa-solid fa-lock mr-1"></i>Peran dan status akun sendiri tidak bisa diubah.</p>
+      </div>
+      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button type="button" @click="userModal=false" class="px-4 py-2.5 rounded border border-slate-200 text-sm font-bold hover:bg-slate-50">Batal</button>
+        <button class="px-5 py-2.5 rounded bg-navy-700 hover:bg-navy-900 text-white text-sm font-bold">Simpan</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================= DIALOG KONFIRMASI ================= -->
+  <div x-show="confirm.open" x-cloak class="fixed inset-0 z-50 grid place-items-center p-4">
+    <div class="fixed inset-0 bg-slate-900/50" @click="confirm.open=false"></div>
+    <div x-show="confirm.open" x-transition class="relative w-full max-w-sm bg-white rounded-lg shadow-xl p-6 text-center">
+      <span class="mx-auto w-12 h-12 rounded-full bg-red-50 text-red-600 grid place-items-center text-xl"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <h2 class="mt-4 text-lg font-extrabold text-slate-800" x-text="confirm.title"></h2>
+      <p class="mt-2 text-sm text-slate-500" x-text="confirm.message"></p>
+      <div class="mt-6 flex justify-center gap-2">
+        <button @click="confirm.open=false" class="px-4 py-2.5 rounded border border-slate-200 text-sm font-bold hover:bg-slate-50">Batal</button>
+        <button @click="confirm.open=false; confirm.onOk()" class="px-4 py-2.5 rounded bg-red-600 hover:bg-red-700 text-white text-sm font-bold" x-text="confirm.okLabel"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST ================= -->
+  <div x-show="toast.show" x-cloak x-transition
+       class="fixed bottom-5 right-5 z-[60] flex items-center gap-3 text-white text-sm px-5 py-3 rounded-lg shadow-lg max-w-[90vw]"
+       :class="toast.error ? 'bg-red-600' : 'bg-slate-900'">
+    <span x-show="!toast.error"><i class="fa-solid fa-circle-check text-emerald-400"></i></span>
+    <span x-show="toast.error"><i class="fa-solid fa-circle-exclamation"></i></span>
+    <span x-text="toast.msg"></span>
+  </div>
+
+  <script>
+    function admin() {
+      const PER_PAGE = 10;
+      const emptyDoc = (type) => ({ id: '', type, number: '', year: '', date: new Date().toISOString().slice(0, 10),
+                                    title: '', desc: '', status: 'Berlaku', file: '', source: '', subject: '', downloads: 0 });
+      return {
+        user: JDIH.currentUser() || { name: '-', role: '' },
+        db: JDIH.load(),
+        sidebar: false,     // ponsel/tablet: sidebar terbuka sebagai panel
+        collapsed: (() => { try { return localStorage.getItem('jdih_sidebar_hidden') === '1'; } catch (e) { return false; } })(), // desktop: disembunyikan
+        tab: 'ringkasan',
+        menu: [
+          { id: 'ringkasan',  label: 'Ringkasan',  icon: 'fa-solid fa-chart-simple', roles: ['admin', 'operator'] },
+          { id: 'dokumen',    label: 'Dokumen',    icon: 'fa-solid fa-file-lines',   roles: ['admin', 'operator'] },
+          { id: 'kategori',   label: 'Kategori',   icon: 'fa-solid fa-folder-tree',  roles: ['admin'] },
+          { id: 'pengguna',   label: 'Pengguna',   icon: 'fa-solid fa-users',        roles: ['admin'] },
+          { id: 'pengaturan', label: 'Pengaturan', icon: 'fa-solid fa-gear',         roles: ['admin'] },
+        ],
+        ROLES: JDIH.ROLES,
+
+        // dokumen
+        docQuery: '', docType: '', docStatus: '', docPage: 1,
+        docModal: false, form: emptyDoc(''),
+        // kategori
+        newCat: { code: '', name: '' }, editCat: null, editCatName: '',
+        // pengguna
+        userModal: false, userForm: {}, showPw: false,
+        // pengaturan
+        settings: {},
+        // ui
+        confirm: { open: false, title: '', message: '', okLabel: 'Hapus', onOk: () => {} },
+        toast: { show: false, msg: '', error: false, t: null },
+
+        init() {
+          this.settings = { ...this.db.settings };
+          const fromHash = () => {
+            const h = location.hash.slice(1);
+            if (this.menu.some((m) => m.id === h) && !this.can(h)) this.notify('Menu ini khusus admin.', true);
+            this.tab = this.can(h) ? h : 'ringkasan';
+          };
+          fromHash();
+          window.addEventListener('hashchange', fromHash);
+          ['docQuery', 'docType', 'docStatus'].forEach((k) => this.$watch(k, () => { this.docPage = 1; }));
+        },
+
+        get currentMenu() { return this.menu.find((m) => m.id === this.tab); },
+        get visibleMenu() { return this.menu.filter((m) => m.roles.includes(this.user.role)); },
+        can(tabId) { return this.visibleMenu.some((m) => m.id === tabId); },
+        get isAdmin() { return this.user.role === 'admin'; },
+
+        // ---------- umum ----------
+        persist(msg) {
+          const ok = JDIH.save(this.db);
+          this.notify(ok ? msg : 'Gagal menyimpan ke browser (penyimpanan diblokir).', !ok);
+        },
+        notify(msg, error = false) {
+          clearTimeout(this.toast.t);
+          Object.assign(this.toast, { show: true, msg, error });
+          this.toast.t = setTimeout(() => { this.toast.show = false; }, 3000);
+        },
+        ask(title, message, onOk, okLabel = 'Hapus') { this.confirm = { open: true, title, message, onOk, okLabel }; },
+        isDesktop() { return window.matchMedia('(min-width: 1024px)').matches; },
+        sidebarVisible() { return this.isDesktop() ? !this.collapsed : this.sidebar; },
+        toggleSidebar() {
+          if (!this.isDesktop()) { this.sidebar = !this.sidebar; return; }
+          this.collapsed = !this.collapsed;
+          try { localStorage.setItem('jdih_sidebar_hidden', this.collapsed ? '1' : '0'); } catch (e) {}
+        },
+        closeModals() { this.docModal = false; this.userModal = false; this.confirm.open = false; this.sidebar = false; },
+        logout() { JDIH.logout(); location.href = 'login.html'; },
+        countByType(code) { return this.db.docs.filter((d) => d.type === code).length; },
+        statusClass(s) {
+          return { Berlaku: 'bg-emerald-50 text-emerald-700', Diubah: 'bg-amber-50 text-amber-700', Dicabut: 'bg-red-50 text-red-700' }[s] || 'bg-slate-100';
+        },
+
+        // ---------- ringkasan ----------
+        get tiles() {
+          const docs = this.db.docs;
+          return [
+            { label: 'Total Dokumen',   value: docs.length, icon: 'fa-solid fa-file-lines' },
+            { label: 'Total Unduhan',   value: docs.reduce((n, d) => n + (Number(d.downloads) || 0), 0), icon: 'fa-solid fa-download' },
+            { label: 'Masih Berlaku',   value: docs.filter((d) => d.status === 'Berlaku').length, icon: 'fa-solid fa-circle-check' },
+            { label: 'Kategori',        value: this.db.categories.length, icon: 'fa-solid fa-folder-tree' },
+          ];
+        },
+        get categoryStats() {
+          const rows = this.db.categories.map((c) => ({ ...c, count: this.countByType(c.code) }));
+          const max = Math.max(1, ...rows.map((r) => r.count));
+          return rows.map((r) => ({ ...r, pct: Math.max(r.count ? 3 : 0, (r.count / max) * 100) }));
+        },
+        get popular() { return [...this.db.docs].sort((a, b) => b.downloads - a.downloads).slice(0, 5); },
+        get recent()  { return [...this.db.docs].sort(JDIH.byDateDesc).slice(0, 5); },
+
+        // ---------- dokumen ----------
+        get docsFiltered() {
+          const q = this.docQuery.toLowerCase().trim();
+          return this.db.docs
+            .filter((d) =>
+              (!this.docType || d.type === this.docType) &&
+              (!this.docStatus || d.status === this.docStatus) &&
+              (!q || [d.title, d.desc, d.number, d.year, d.subject].join(' ').toLowerCase().includes(q)))
+            .sort(JDIH.byDateDesc);
+        },
+        get docPages() { return Math.max(1, Math.ceil(this.docsFiltered.length / PER_PAGE)); },
+        get docsPaged() {
+          const p = Math.min(this.docPage, this.docPages);
+          return this.docsFiltered.slice((p - 1) * PER_PAGE, p * PER_PAGE);
+        },
+        openDocForm(doc) {
+          this.form = doc ? { ...doc } : emptyDoc(this.docType || (this.db.categories[0] || {}).code || '');
+          this.docModal = true;
+        },
+        saveDoc() {
+          const f = this.form;
+          if (!f.title.trim() || !f.date || !f.type) { this.notify('Lengkapi kolom bertanda *.', true); return; }
+          const doc = { ...f, title: f.title.trim(), desc: (f.desc || '').trim(), number: (f.number || '').trim(), year: Number(f.date.slice(0, 4)) };
+          // Simulasi unggah: hanya nama berkas yang dicatat; path PDF asli tidak ditimpa
+          if (doc.uploadName) { doc.file = doc.uploadName; doc.fileSize = 0; }
+          delete doc.uploadName;
+          if (doc.id) {
+            const i = this.db.docs.findIndex((d) => d.id === doc.id);
+            this.db.docs.splice(i, 1, doc);
+            this.persist('Dokumen berhasil diperbarui.');
+          } else {
+            doc.id = JDIH.uid();
+            this.db.docs.unshift(doc);
+            this.persist('Dokumen berhasil ditambahkan.');
+          }
+          this.docModal = false;
+        },
+        confirmDeleteDoc(doc) {
+          this.ask('Hapus dokumen?', doc.title, () => {
+            this.db.docs = this.db.docs.filter((d) => d.id !== doc.id);
+            this.docPage = Math.min(this.docPage, this.docPages);
+            this.persist('Dokumen dihapus.');
+          });
+        },
+
+        // ---------- kategori ----------
+        addCategory() {
+          const code = this.newCat.code.trim(), name = this.newCat.name.trim();
+          if (!code || !name) return;
+          if (this.db.categories.some((c) => c.code === code)) { this.notify(`Kode ${code} sudah dipakai.`, true); return; }
+          this.db.categories.push({ code, name });
+          this.newCat = { code: '', name: '' };
+          this.persist('Kategori ditambahkan.');
+        },
+        saveCategoryName(c) {
+          const name = this.editCatName.trim();
+          if (!name) { this.notify('Nama kategori tidak boleh kosong.', true); return; }
+          c.name = name;
+          this.editCat = null;
+          this.persist('Nama kategori diperbarui.');
+        },
+        moveCategory(i, dir) {
+          const list = this.db.categories, j = i + dir;
+          if (j < 0 || j >= list.length) return;
+          [list[i], list[j]] = [list[j], list[i]];
+          this.persist('Urutan menu diperbarui.');
+        },
+        confirmDeleteCategory(c) {
+          const n = this.countByType(c.code);
+          if (n > 0) { this.notify(`Tidak bisa dihapus: masih ada ${n} dokumen di kategori ini.`, true); return; }
+          this.ask('Hapus kategori?', c.name, () => {
+            this.db.categories = this.db.categories.filter((x) => x.code !== c.code);
+            this.persist('Kategori dihapus.');
+          });
+        },
+
+        // ---------- pengguna ----------
+        activeAdmins(users) { return users.filter((u) => u.role === 'admin' && u.active).length; },
+        openUserForm(u) {
+          this.showPw = false;
+          this.userForm = u ? { ...u, password: '' } : { id: '', name: '', username: '', password: '', role: 'operator', active: true };
+          this.userModal = true;
+        },
+        saveUser() {
+          const f = this.userForm;
+          const name = f.name.trim(), username = f.username.trim().toLowerCase();
+          if (!name) return this.notify('Nama wajib diisi.', true);
+          if (!/^[a-z0-9._-]{3,}$/.test(username)) return this.notify('Nama pengguna minimal 3 karakter: huruf kecil, angka, titik, garis.', true);
+          if (this.db.users.some((u) => u.username === username && u.id !== f.id)) return this.notify(`Nama pengguna "${username}" sudah dipakai.`, true);
+          if (!f.id && f.password.length < 6) return this.notify('Kata sandi minimal 6 karakter.', true);
+          if (f.id && f.password && f.password.length < 6) return this.notify('Kata sandi baru minimal 6 karakter.', true);
+          const self = f.id === this.user.id;
+          if (self && (f.role !== 'admin' || !f.active)) return this.notify('Anda tidak bisa menurunkan peran atau menonaktifkan akun sendiri.', true);
+
+          const old = this.db.users.find((u) => u.id === f.id);
+          const user = { id: f.id || 'u' + Date.now().toString(36), name, username, role: f.role, active: !!f.active,
+                         password: f.password || (old ? old.password : '') };
+          const next = old ? this.db.users.map((u) => (u.id === user.id ? user : u)) : [...this.db.users, user];
+          if (!this.activeAdmins(next)) return this.notify('Harus ada minimal satu admin aktif.', true);
+          this.db.users = next;
+          this.persist(old ? 'Data pengguna diperbarui.' : 'Pengguna ditambahkan.');
+          if (self) this.user = JDIH.currentUser() || this.user;
+          this.userModal = false;
+        },
+        confirmDeleteUser(u) {
+          if (u.id === this.user.id) return this.notify('Anda tidak bisa menghapus akun sendiri.', true);
+          const next = this.db.users.filter((x) => x.id !== u.id);
+          if (!this.activeAdmins(next)) return this.notify('Harus ada minimal satu admin aktif.', true);
+          this.ask('Hapus pengguna?', `${u.name} (${u.username})`, () => { this.db.users = next; this.persist('Pengguna dihapus.'); });
+        },
+
+        // ---------- pengaturan ----------
+        saveSettings() {
+          this.db.settings = { ...this.settings };
+          this.persist('Pengaturan disimpan.');
+        },
+        exportJson() {
+          const blob = new Blob([JSON.stringify(this.db, null, 2)], { type: 'application/json' });
+          const a = Object.assign(document.createElement('a'), {
+            href: URL.createObjectURL(blob), download: `jdih-data-${new Date().toISOString().slice(0, 10)}.json`,
+          });
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        },
+        confirmReset() {
+          this.ask('Kembalikan data contoh?', 'Semua perubahan dokumen, kategori, dan pengaturan akan hilang.', () => {
+            this.db = JDIH.reset();
+            if (!JDIH.currentUser()) { location.href = 'login.html'; return; } // akun yang dipakai tidak ada di data contoh
+            this.settings = { ...this.db.settings };
+            this.notify('Data contoh dipulihkan.');
+          }, 'Kembalikan');
+        },
+      };
+    }
+  </script>
+</body>
+</html>

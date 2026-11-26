@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kebijakan Privasi — JDIH Kota Jayapura</title>
+  <link rel="icon" type="image/png" href="assets/kotajayapura-logo.png">
+  <link rel="apple-touch-icon" href="assets/kotajayapura-logo.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="assets/js/data-dokumen.js"></script>
+  <script src="assets/js/store.js"></script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="font-sans bg-slate-50 text-slate-700 antialiased">
+
+  <div id="site-header"></div>
+
+  <section class="bg-gradient-to-br from-navy-700 via-navy-800 to-navy-950 text-white">
+    <div class="max-w-6xl mx-auto px-4 py-10 text-center">
+      <nav class="text-sm text-white/70">
+        <a href="index.html" class="hover:text-white">Beranda</a><span class="mx-2">/</span><span class="text-white">Kebijakan Privasi</span>
+      </nav>
+      <h1 class="mt-3 text-3xl sm:text-4xl font-black tracking-tight">Kebijakan Privasi</h1>
+      <p class="mt-2 text-sm text-white/70">Terakhir diperbarui: 26 November 2026</p>
+    </div>
+  </section>
+
+  <main class="max-w-4xl mx-auto px-4 py-12 space-y-6" x-data="privacyPage()">
+    <section class="bg-white rounded-lg shadow-sm p-6 sm:p-8">
+      <p class="leading-relaxed">
+        Pemerintah Kota Jayapura menghormati privasi setiap pengunjung situs JDIH Kota Jayapura. Kebijakan ini menjelaskan
+        data apa saja yang dikumpulkan, bagaimana data tersebut digunakan, serta hak Anda sebagai pengguna, sejalan dengan
+        Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi.
+      </p>
+    </section>
+
+    <!-- Ringkasan data -->
+    <section class="bg-white rounded-lg shadow-sm p-6 sm:p-8">
+      <h2 class="text-xl font-extrabold text-navy-800">Data yang Kami Kumpulkan</h2>
+      <div class="mt-5 grid sm:grid-cols-3 gap-4">
+        <template x-for="d in collected" :key="d.title">
+          <div class="rounded-lg border border-slate-200 p-5">
+            <span class="w-10 h-10 rounded-full bg-brand-50 text-navy-700 grid place-items-center"><i :class="d.icon"></i></span>
+            <h3 class="mt-3 font-extrabold text-slate-800" x-text="d.title"></h3>
+            <p class="mt-1 text-sm text-slate-600 leading-relaxed" x-text="d.desc"></p>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <template x-for="s in sections" :key="s.title">
+      <section class="bg-white rounded-lg shadow-sm p-6 sm:p-8">
+        <h2 class="text-xl font-extrabold text-navy-800" x-text="s.title"></h2>
+        <ul class="mt-4 space-y-2.5">
+          <template x-for="(p, j) in s.points" :key="j">
+            <li class="flex gap-3 leading-relaxed"><span class="text-orange-500 mt-0.5"><i class="fa-solid fa-shield-halved"></i></span><span x-text="p"></span></li>
+          </template>
+        </ul>
+      </section>
+    </template>
+
+    <!-- Simulasi: data yang tersimpan di browser ini -->
+    <section class="bg-white rounded-lg shadow-sm p-6 sm:p-8">
+      <h2 class="text-xl font-extrabold text-navy-800">Data di Perangkat Anda</h2>
+      <p class="mt-2 text-sm text-slate-500">Situs ini menyimpan beberapa preferensi di penyimpanan lokal browser (bukan cookie pelacak). Anda dapat melihat dan menghapusnya di sini.</p>
+      <ul class="mt-4 divide-y divide-slate-100 text-sm">
+        <template x-for="k in storage" :key="k.key">
+          <li class="py-3 flex flex-wrap items-center gap-3">
+            <span class="font-bold text-slate-800 flex-1 min-w-[12rem]" x-text="k.label"></span>
+            <code class="text-xs bg-slate-100 rounded px-2 py-0.5" x-text="k.key"></code>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                  :class="k.present ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'"
+                  x-text="k.present ? 'Tersimpan' : 'Kosong'"></span>
+          </li>
+        </template>
+      </ul>
+      <button @click="clearPrefs()" class="mt-4 border border-red-200 text-red-600 hover:bg-red-50 text-sm font-bold px-4 py-2.5 rounded">
+        <i class="fa-solid fa-eraser mr-1.5"></i>Hapus preferensi saya
+      </button>
+    </section>
+
+    <section class="bg-white rounded-lg shadow-sm p-6 sm:p-8">
+      <h2 class="text-xl font-extrabold text-navy-800">Hubungi Kami</h2>
+      <p class="mt-3 leading-relaxed">
+        Pertanyaan atau permintaan terkait data pribadi dapat disampaikan melalui email
+        <a :href="'mailto:' + email" class="font-bold text-navy-700 hover:underline" x-text="email"></a>.
+      </p>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/layout.js"></script>
+
+  <script>
+    function privacyPage() {
+      // Hanya preferensi pengunjung; data situs (jdih_db_v1) & sesi admin tidak dihapus dari sini
+      const PREFS = [
+        { key: 'jdih_theme', label: 'Pilihan mode terang/gelap' },
+        { key: 'jdih_terms_agreed', label: 'Persetujuan Prasyarat Penggunaan' },
+        { key: 'jdih_sidebar_hidden', label: 'Tampilan sidebar panel pengelola' },
+      ];
+      const has = (k) => { try { return localStorage.getItem(k) !== null; } catch (e) { return false; } };
+      return {
+        email: JDIH.load().settings.email,
+        storage: PREFS.map((p) => ({ ...p, present: has(p.key) })),
+        collected: [
+          { icon: 'fa-solid fa-server', title: 'Log Akses', desc: 'Alamat IP, jenis browser, halaman yang dibuka, dan waktu akses untuk keperluan keamanan dan statistik.' },
+          { icon: 'fa-solid fa-magnifying-glass', title: 'Kata Kunci Pencarian', desc: 'Kata kunci pencarian dokumen secara anonim untuk meningkatkan kualitas layanan.' },
+          { icon: 'fa-solid fa-envelope', title: 'Data yang Anda Kirim', desc: 'Nama dan email bila Anda menghubungi kami melalui email atau telepon.' },
+        ],
+        sections: [
+          { title: 'Penggunaan Data', points: [
+            'Menyediakan dan meningkatkan layanan pencarian serta pengunduhan dokumen hukum.',
+            'Menyusun statistik kunjungan dan unduhan secara agregat (tidak mengidentifikasi individu).',
+            'Menjaga keamanan sistem dari akses tidak sah.' ] },
+          { title: 'Berbagi Data', points: [
+            'Kami tidak menjual atau menyewakan data pengunjung kepada pihak mana pun.',
+            'Data hanya dapat diberikan kepada pihak berwenang sesuai ketentuan peraturan perundang-undangan.' ] },
+          { title: 'Penyimpanan & Keamanan', points: [
+            'Log akses disimpan paling lama 1 (satu) tahun, kemudian dihapus atau dianonimkan.',
+            'Akses ke data dibatasi hanya untuk petugas yang berwenang.' ] },
+          { title: 'Hak Anda', points: [
+            'Mengetahui data pribadi Anda yang kami simpan.',
+            'Meminta perbaikan atau penghapusan data pribadi Anda.' ] },
+        ],
+        clearPrefs() {
+          PREFS.forEach((p) => { try { localStorage.removeItem(p.key); } catch (e) {} });
+          this.storage = PREFS.map((p) => ({ ...p, present: has(p.key) }));
+          window.dispatchEvent(new CustomEvent('toast', { detail: 'Preferensi di browser ini telah dihapus.' }));
+        },
+      };
+    }
+  </script>
+</body>
+</html>

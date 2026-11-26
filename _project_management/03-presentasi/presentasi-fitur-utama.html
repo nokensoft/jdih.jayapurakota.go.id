@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presentasi Fitur Utama — Website JDIH Kota Jayapura</title>
+<link rel="icon" type="image/png" href="aset/kotajayapura-logo.png">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+<!--
+  ATURAN EXPORT KE PPTX (pptxgenjs, LAYOUT_WIDE 13.333" x 7.5")
+  - Setiap <section class="slide"> = 1 slide, kanvas 1280 x 720 px.
+  - Posisi & ukuran dalam px: inci = px / 96.  Ukuran font: pt = px * 0.75.
+  - Semua elemen memakai position:absolute (left/top/width/height) agar bisa dipetakan 1:1.
+  - Warna solid saja (tanpa gradien), font Calibri, teks isi >= 19px (14pt), keterangan >= 14px (10,5pt).
+  - Ikon Font Awesome -> dirender jadi PNG saat konversi. Gambar ada di folder aset/.
+  - <aside class="notes"> = catatan pembicara (slide.addNotes), tidak tampil di slide.
+-->
+<style>
+  :root {
+    --navy: #0D47A1;   /* warna utama situs */
+    --navy-dk: #08245C;/* latar slide gelap */
+    --orange: #FF9800; /* aksen */
+    --ink: #1E293B;    /* teks utama */
+    --muted: #5B6B82;  /* teks sekunder */
+    --tint: #E8F1FD;   /* latar panel */
+    --line: #D8E0EC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #2A3345; font-family: Calibri, Carlito, 'Segoe UI', Arial, sans-serif; color: var(--ink); }
+
+  /* ---------- Toolbar penampil (tidak ikut slide / cetak) ---------- */
+  .toolbar { position: sticky; top: 0; z-index: 10; display: flex; gap: 12px; align-items: center; justify-content: center;
+             padding: 10px 16px; background: #141B29; color: #CBD5E1; font: 14px/1.4 'Segoe UI', Arial, sans-serif; flex-wrap: wrap; }
+  .toolbar button { background: #FF9800; color: #fff; border: 0; border-radius: 6px; padding: 7px 14px; font-weight: 700; cursor: pointer; }
+  .toolbar button.ghost { background: #2A3345; color: #E2E8F0; }
+  .toolbar kbd { background: #2A3345; border-radius: 4px; padding: 1px 6px; }
+
+  /* ---------- Daftar slide (mode tinjau) ---------- */
+  .deck { display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 28px 16px 60px; }
+  .frame { width: min(1280px, calc(100vw - 32px)); aspect-ratio: 16 / 9; position: relative; }
+  .slide { position: absolute; top: 0; left: 0; width: 1280px; height: 720px; transform-origin: 0 0;
+           background: #fff; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+  .slide.dark { background: var(--navy-dk); color: #fff; }
+
+  /* ---------- Mode presentasi ---------- */
+  body.present { background: #000; overflow: hidden; }
+  body.present .toolbar { display: none; }
+  body.present .deck { padding: 0; gap: 0; height: 100vh; justify-content: center; }
+  body.present .frame { display: none; width: min(100vw, calc(100vh * 16 / 9)); }
+  body.present .frame.current { display: block; }
+  body.present .slide { box-shadow: none; }
+
+  /* ---------- Elemen slide ---------- */
+  .abs { position: absolute; }
+  .title { left: 64px; top: 44px; width: 1152px; font-size: 48px; font-weight: 700; color: var(--navy-dk); line-height: 1.1; }
+  .dark .title { color: #fff; }
+  .footer { left: 64px; top: 682px; width: 420px; font-size: 14px; color: var(--muted); }
+  .pageno { left: 1186px; top: 682px; width: 30px; font-size: 14px; color: var(--muted); text-align: right; }
+  .ft-pic { left: 600px; top: 682px; width: 462px; font-size: 14px; color: var(--muted); text-align: right; }
+  .ft-logo { left: 1068px; top: 681px; height: 18px; }
+  .ft-brand { left: 1090px; top: 682px; width: 90px; font-size: 14px; font-weight: 700; color: var(--navy-dk); }
+  .dark .ft-pic { color: #9FB3D9; }
+  .dark .ft-brand { color: #fff; }
+  .dark .footer, .dark .pageno { color: #9FB3D9; }
+
+  .shot { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #fff;
+          box-shadow: 0 12px 32px rgba(8, 36, 92, .18); }
+  .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
+
+  .icon { width: 52px; height: 52px; border-radius: 50%; background: var(--orange); color: #fff;
+          display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .icon.sm { width: 44px; height: 44px; font-size: 18px; }
+  .icon.navy { background: var(--navy); }
+
+  .h3 { font-size: 24px; font-weight: 700; color: var(--navy-dk); line-height: 1.2; }
+  .p  { font-size: 20px; color: var(--muted); line-height: 1.35; }
+  .dark .h3 { color: #fff; }
+  .dark .p { color: #C9D6EE; }
+  .card { background: var(--tint); border-radius: 14px; }
+  .stat { font-size: 88px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .caption { font-size: 15px; color: var(--muted); }
+  .kicker { font-size: 18px; font-weight: 700; letter-spacing: .14em; color: var(--orange); text-transform: uppercase; }
+  .notes { display: none; }
+
+  /* ---------- Cetak / Simpan PDF: 1 slide per halaman ---------- */
+  @page { size: 13.333in 7.5in; margin: 0; }
+  @media print {
+    html, body { background: #fff; }
+    .toolbar { display: none; }
+    .deck { padding: 0; gap: 0; display: block; }
+    .frame { width: 13.333in; height: 7.5in; aspect-ratio: auto; page-break-after: always; break-after: page; }
+    .slide { transform: scale(1) !important; width: 13.333in; height: 7.5in; box-shadow: none;
+             -webkit-print-color-adjust: exact; print-color-adjust: exact; zoom: 1.0417; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <strong style="color:#fff">Presentasi Fitur Utama — JDIH Kota Jayapura</strong>
+  <span>13 slide · 16:9</span>
+  <button onclick="startPresent()"><i class="fa-solid fa-play"></i>&nbsp; Mode Presentasi</button>
+  <button class="ghost" onclick="window.print()"><i class="fa-solid fa-file-pdf"></i>&nbsp; Simpan PDF</button>
+  <span><kbd>←</kbd> <kbd>→</kbd> pindah slide · <kbd>Esc</kbd> keluar</span>
+</div>
+
+<main class="deck">
+
+<!-- ===================== 1. SAMPUL ===================== -->
+<div class="frame"><section class="slide dark" data-layout="sampul">
+  <img class="abs" src="aset/kotajayapura-logo.png" alt="Logo Kota Jayapura" style="left:64px; top:60px; height:96px;">
+  <p class="abs kicker" style="left:64px; top:212px; width:560px;">Presentasi Fitur Utama</p>
+  <h1 class="abs" style="left:64px; top:248px; width:580px; font-size:56px; font-weight:700; line-height:1.08;">Pembaruan Website JDIH Kota Jayapura</h1>
+  <p class="abs p" style="left:64px; top:440px; width:540px;">Prototype portal Jaringan Dokumentasi dan Informasi Hukum, untuk ditinjau bersama Bagian Hukum Setda Kota Jayapura</p>
+  <p class="abs" style="left:64px; top:516px; width:580px; font-size:19px; color:#C9D6EE;"><i class="fa-solid fa-globe" style="color:#FF9800;"></i>&nbsp; Akan aktif di subdomain resmi Pemda</p>
+  <p class="abs" style="left:64px; top:544px; width:580px; font-size:24px; font-weight:700; color:#FF9800;">https://jdih.jayapurakota.go.id</p>
+  <p class="abs" style="left:64px; top:612px; width:400px; font-size:20px; font-weight:700;">Nokensoft · v.1.0 · 26 November 2026</p>
+  <div class="abs shot" style="left:672px; top:170px; width:544px; height:340px; border-color:#1B3B7A;"><img src="aset/beranda.jpg" alt="Tampilan beranda"></div>
+  <p class="abs" style="left:672px; top:530px; width:544px; font-size:15px; color:#9FB3D9;">Tampilan beranda prototype</p>
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">1</p>
+  <aside class="notes">Pembukaan: tujuan presentasi adalah menunjukkan fitur utama prototype website JDIH yang baru dan menyepakati langkah berikutnya. Sistem akan aktif di subdomain resmi Pemda, jdih.jayapurakota.go.id.</aside>
+</section></div>
+
+<!-- ===================== 2. RINGKASAN ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Empat pembaruan utama</h2>
+  <div class="abs card" style="left:64px; top:150px; width:560px; height:226px;"></div>
+  <div class="abs icon" style="left:92px; top:178px;"><i class="fa-solid fa-globe"></i></div>
+  <p class="abs h3" style="left:92px; top:248px; width:500px;">Portal publik yang ringkas</p>
+  <p class="abs p" style="left:92px; top:284px; width:500px;">Navigasi hanya kategori dokumen, pencarian di halaman depan</p>
+
+  <div class="abs card" style="left:656px; top:150px; width:560px; height:226px;"></div>
+  <div class="abs icon" style="left:684px; top:178px;"><i class="fa-solid fa-scale-balanced"></i></div>
+  <p class="abs h3" style="left:684px; top:248px; width:500px;">Dokumen hukum asli</p>
+  <p class="abs p" style="left:684px; top:284px; width:500px;">25 Perda &amp; Perwali lengkap dengan metadata dan berkas PDF</p>
+
+  <div class="abs card" style="left:64px; top:406px; width:560px; height:226px;"></div>
+  <div class="abs icon" style="left:92px; top:434px;"><i class="fa-solid fa-gauge"></i></div>
+  <p class="abs h3" style="left:92px; top:504px; width:500px;">Panel pengelola</p>
+  <p class="abs p" style="left:92px; top:540px; width:500px;">Petugas mengelola dokumen, kategori, dan kontak tanpa coding</p>
+
+  <div class="abs card" style="left:656px; top:406px; width:560px; height:226px;"></div>
+  <div class="abs icon" style="left:684px; top:434px;"><i class="fa-solid fa-universal-access"></i></div>
+  <p class="abs h3" style="left:684px; top:504px; width:500px;">Nyaman &amp; transparan</p>
+  <p class="abs p" style="left:684px; top:540px; width:500px;">Mode gelap, tampilan ponsel, status sistem, kebijakan privasi</p>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">2</p>
+  <aside class="notes">Gambaran besar sebelum masuk ke tiap fitur. Empat kelompok ini menjadi urutan slide berikutnya.</aside>
+</section></div>
+
+<!-- ===================== 3. BERANDA ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Beranda langsung ke inti</h2>
+  <div class="abs icon sm" style="left:64px; top:160px;"><i class="fa-solid fa-magnifying-glass"></i></div>
+  <p class="abs h3" style="left:128px; top:160px; width:376px;">Cari dokumen</p>
+  <p class="abs p" style="left:128px; top:194px; width:376px;">Nomor, tahun, judul, atau subjek dari kolom pencarian utama</p>
+
+  <div class="abs icon sm" style="left:64px; top:316px;"><i class="fa-solid fa-chart-simple"></i></div>
+  <p class="abs h3" style="left:128px; top:316px; width:376px;">Statistik otomatis</p>
+  <p class="abs p" style="left:128px; top:350px; width:376px;">Jumlah dokumen dihitung langsung dari data, tanpa diisi manual</p>
+
+  <div class="abs icon sm" style="left:64px; top:472px;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+  <p class="abs h3" style="left:128px; top:472px; width:376px;">Dokumen terbaru</p>
+  <p class="abs p" style="left:128px; top:506px; width:376px;">Empat peraturan terakhir dan daftar kategori di sisi kanan</p>
+
+  <div class="abs shot" style="left:544px; top:150px; width:672px; height:420px;"><img src="aset/beranda.jpg" alt="Beranda"></div>
+  <p class="abs caption" style="left:544px; top:586px; width:672px;">Warna dan tata letak mengikuti mockup konsep awal yang telah disepakati</p>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">3</p>
+  <aside class="notes">Tunjukkan hero dengan pencarian, statistik yang dihitung otomatis, dan dokumen terbaru. Header tanpa tagline, hero tanpa paragraf, sesuai arahan desain.</aside>
+</section></div>
+
+<!-- ===================== 4. NAVIGASI & DAFTAR ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Navigasi cukup lima kategori</h2>
+  <div class="abs shot" style="left:64px; top:150px; width:672px; height:420px;"><img src="aset/daftar-dokumen.jpg" alt="Daftar dokumen"></div>
+  <p class="abs caption" style="left:64px; top:586px; width:672px;">Halaman daftar Peraturan Daerah</p>
+
+  <div class="abs icon sm" style="left:776px; top:160px;"><i class="fa-solid fa-bars"></i></div>
+  <p class="abs h3" style="left:840px; top:160px; width:376px;">Menu = kategori</p>
+  <p class="abs p" style="left:840px; top:194px; width:376px;">Perda, Perwali, Keputusan, Surat Edaran, Monografi</p>
+
+  <div class="abs icon sm" style="left:776px; top:316px;"><i class="fa-solid fa-filter"></i></div>
+  <p class="abs h3" style="left:840px; top:316px; width:376px;">Filter &amp; urutkan</p>
+  <p class="abs p" style="left:840px; top:350px; width:376px;">Tahun, status berlaku, terbaru, atau terbanyak diunduh</p>
+
+  <div class="abs icon sm" style="left:776px; top:472px;"><i class="fa-solid fa-tag"></i></div>
+  <p class="abs h3" style="left:840px; top:472px; width:376px;">Status jelas</p>
+  <p class="abs p" style="left:840px; top:506px; width:376px;">Label Berlaku, Diubah, atau Dicabut di setiap dokumen</p>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">4</p>
+  <aside class="notes">Navigasi utama sengaja hanya kategori dokumen agar pengunjung langsung menemukan peraturan. Klik kategori memfilter daftar.</aside>
+</section></div>
+
+<!-- ===================== 5. DETAIL DOKUMEN ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Setiap dokumen tampil lengkap</h2>
+  <div class="abs icon sm" style="left:64px; top:156px;"><i class="fa-solid fa-list-check"></i></div>
+  <p class="abs h3" style="left:128px; top:156px; width:336px;">Metadata resmi</p>
+  <p class="abs p" style="left:128px; top:190px; width:336px;">Tanggal penetapan, pengundangan, Lembaran/Berita Daerah</p>
+
+  <div class="abs icon sm" style="left:64px; top:284px;"><i class="fa-solid fa-book-open"></i></div>
+  <p class="abs h3" style="left:128px; top:284px; width:336px;">Abstrak &amp; dasar hukum</p>
+  <p class="abs p" style="left:128px; top:318px; width:336px;">Pertimbangan, daftar dasar hukum, dan catatan berlaku</p>
+
+  <div class="abs icon sm" style="left:64px; top:412px;"><i class="fa-solid fa-file-pdf"></i></div>
+  <p class="abs h3" style="left:128px; top:412px; width:336px;">Baca &amp; unduh PDF</p>
+  <p class="abs p" style="left:128px; top:446px; width:336px;">Pratinjau langsung di halaman, tanpa aplikasi lain</p>
+
+  <div class="abs icon sm" style="left:64px; top:540px;"><i class="fa-solid fa-link"></i></div>
+  <p class="abs h3" style="left:128px; top:540px; width:336px;">Relasi peraturan</p>
+  <p class="abs p" style="left:128px; top:574px; width:336px;">Mengubah atau diubah dengan peraturan lain</p>
+
+  <div class="abs shot" style="left:496px; top:140px; width:544px; height:340px;"><img src="aset/detail-dokumen.jpg" alt="Detail dokumen"></div>
+  <div class="abs shot" style="left:672px; top:316px; width:544px; height:340px;"><img src="aset/detail-pratinjau.jpg" alt="Pratinjau PDF"></div>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">5</p>
+  <aside class="notes">Contoh: Perda Nomor 22 Tahun 2024 tentang Peradilan Adat Port Numbay. Metadata dan PDF adalah dokumen asli.</aside>
+</section></div>
+
+<!-- ===================== 6. DATA DOKUMEN ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">25 dokumen hukum asli sudah dimuat</h2>
+  <div class="abs card" style="left:64px; top:156px; width:352px; height:208px;"></div>
+  <p class="abs stat" style="left:96px; top:184px; width:300px;">25</p>
+  <p class="abs p" style="left:96px; top:290px; width:300px;">Dokumen asli dengan berkas PDF</p>
+
+  <div class="abs card" style="left:464px; top:156px; width:352px; height:208px;"></div>
+  <p class="abs stat" style="left:496px; top:184px; width:300px;">10</p>
+  <p class="abs p" style="left:496px; top:290px; width:300px;">Peraturan Daerah 2023–2024</p>
+
+  <div class="abs card" style="left:864px; top:156px; width:352px; height:208px;"></div>
+  <p class="abs stat" style="left:896px; top:184px; width:300px;">15</p>
+  <p class="abs p" style="left:896px; top:290px; width:300px;">Peraturan Walikota 2024–2025</p>
+
+  <div class="abs icon navy" style="left:64px; top:456px;"><i class="fa-solid fa-building-columns"></i></div>
+  <p class="abs h3" style="left:136px; top:456px; width:480px;">Sumber resmi</p>
+  <p class="abs p" style="left:136px; top:492px; width:480px;">Diambil dari JDIH BPK RI (peraturan.bpk.go.id), termasuk abstrak dan dasar hukum</p>
+
+  <div class="abs icon" style="left:672px; top:456px;"><i class="fa-solid fa-hourglass-half"></i></div>
+  <p class="abs h3" style="left:744px; top:456px; width:472px;">Menunggu dari Bagian Hukum</p>
+  <p class="abs p" style="left:744px; top:492px; width:472px;">Keputusan Walikota, Surat Edaran, dan Monografi Hukum belum ada di sumber publik; sementara memakai contoh</p>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">6</p>
+  <aside class="notes">Tekankan bahwa Perda dan Perwali sudah memakai dokumen asli. Minta Bagian Hukum menyiapkan Keputusan Walikota, Surat Edaran, dan Monografi Hukum.</aside>
+</section></div>
+
+<!-- ===================== 7. PANEL PENGELOLA ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Panel pengelola untuk petugas</h2>
+  <div class="abs shot" style="left:64px; top:150px; width:704px; height:440px;"><img src="aset/admin-ringkasan.jpg" alt="Dasbor ringkasan"></div>
+  <p class="abs caption" style="left:64px; top:604px; width:704px;">Di prototype masih simulasi; versi tayang memakai login &amp; database server</p>
+
+  <div class="abs icon sm" style="left:808px; top:156px;"><i class="fa-solid fa-chart-simple"></i></div>
+  <p class="abs h3" style="left:872px; top:164px; width:344px;">Ringkasan statistik</p>
+  <div class="abs icon sm" style="left:808px; top:246px;"><i class="fa-solid fa-file-lines"></i></div>
+  <p class="abs h3" style="left:872px; top:254px; width:344px;">Tambah, ubah, hapus dokumen</p>
+  <div class="abs icon sm" style="left:808px; top:336px;"><i class="fa-solid fa-folder-tree"></i></div>
+  <p class="abs h3" style="left:872px; top:344px; width:344px;">Kategori &amp; urutan menu</p>
+  <div class="abs icon sm" style="left:808px; top:426px;"><i class="fa-solid fa-address-book"></i></div>
+  <p class="abs h3" style="left:872px; top:434px; width:344px;">Kontak di situs publik</p>
+  <div class="abs icon sm" style="left:808px; top:516px;"><i class="fa-solid fa-file-export"></i></div>
+  <p class="abs h3" style="left:872px; top:524px; width:344px;">Cadangan data</p>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">7</p>
+  <aside class="notes">Perubahan dari panel langsung tampil di situs publik. Jelaskan bahwa pada versi produksi data akan disimpan di server.</aside>
+</section></div>
+
+<!-- ===================== 8. ALUR KERJA ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Publikasi dokumen dalam tiga langkah</h2>
+  <div class="abs icon navy" style="left:64px; top:156px; font-size:24px; font-weight:700;">1</div>
+  <p class="abs h3" style="left:136px; top:156px; width:340px;">Masuk akun petugas</p>
+  <p class="abs p" style="left:136px; top:190px; width:340px;">Halaman login khusus pengelola</p>
+
+  <div class="abs icon navy" style="left:64px; top:256px; font-size:24px; font-weight:700;">2</div>
+  <p class="abs h3" style="left:136px; top:256px; width:340px;">Isi formulir dokumen</p>
+  <p class="abs p" style="left:136px; top:290px; width:340px;">Jenis, nomor, tanggal, judul, berkas PDF</p>
+
+  <div class="abs icon" style="left:64px; top:356px; font-size:24px; font-weight:700;">3</div>
+  <p class="abs h3" style="left:136px; top:356px; width:340px;">Simpan, langsung tayang</p>
+  <p class="abs p" style="left:136px; top:390px; width:340px;">Dokumen muncul di beranda dan daftar</p>
+
+  <div class="abs shot" style="left:64px; top:466px; width:288px; height:180px;"><img src="aset/login.jpg" alt="Halaman login"></div>
+  <div class="abs shot" style="left:528px; top:150px; width:688px; height:430px;"><img src="aset/admin-form.jpg" alt="Formulir dokumen"></div>
+  <p class="abs caption" style="left:528px; top:596px; width:688px;">Formulir ubah dokumen di panel pengelola</p>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">8</p>
+  <aside class="notes">Peragakan alur singkat: login, buka menu Dokumen, Tambah Dokumen, isi formulir, simpan, lalu buka situs publik.</aside>
+</section></div>
+
+<!-- ===================== 9. PERANGKAT ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Nyaman di layar mana pun</h2>
+  <div class="abs shot" style="left:64px; top:168px; width:608px; height:380px;"><img src="aset/mode-gelap.jpg" alt="Mode gelap"></div>
+  <p class="abs caption" style="left:64px; top:564px; width:608px;">Mode gelap di layar desktop</p>
+  <div class="abs shot" style="left:712px; top:150px; width:224px; height:485px; border-radius:22px;"><img src="aset/ponsel.jpg" alt="Tampilan ponsel"></div>
+
+  <div class="abs icon sm" style="left:976px; top:168px;"><i class="fa-solid fa-moon"></i></div>
+  <p class="abs h3" style="left:976px; top:228px; width:240px;">Mode terang &amp; gelap</p>
+  <p class="abs p" style="left:976px; top:262px; width:240px;">Ikut pengaturan perangkat, bisa diganti satu klik</p>
+
+  <div class="abs icon sm" style="left:976px; top:420px;"><i class="fa-solid fa-mobile-screen"></i></div>
+  <p class="abs h3" style="left:976px; top:480px; width:240px;">Siap di ponsel</p>
+  <p class="abs p" style="left:976px; top:514px; width:240px;">Menu dan kolom menyesuaikan lebar layar</p>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">9</p>
+  <aside class="notes">Sebagian besar pengunjung situs pemerintah membuka dari ponsel; tampilan dan tombol menyesuaikan.</aside>
+</section></div>
+
+<!-- ===================== 10. TRANSPARANSI ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Informasi layanan yang terbuka</h2>
+  <div class="abs icon sm" style="left:64px; top:160px;"><i class="fa-solid fa-signal"></i></div>
+  <p class="abs h3" style="left:128px; top:160px; width:376px;">Status Sistem</p>
+  <p class="abs p" style="left:128px; top:194px; width:376px;">Ketersediaan layanan 90 hari dan riwayat gangguan</p>
+
+  <div class="abs icon sm" style="left:64px; top:316px;"><i class="fa-solid fa-file-contract"></i></div>
+  <p class="abs h3" style="left:128px; top:316px; width:376px;">Prasyarat Penggunaan</p>
+  <p class="abs p" style="left:128px; top:350px; width:376px;">Ketentuan memakai dan mengutip dokumen</p>
+
+  <div class="abs icon sm" style="left:64px; top:472px;"><i class="fa-solid fa-user-shield"></i></div>
+  <p class="abs h3" style="left:128px; top:472px; width:376px;">Kebijakan Privasi</p>
+  <p class="abs p" style="left:128px; top:506px; width:376px;">Mengacu UU Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi</p>
+
+  <div class="abs shot" style="left:544px; top:150px; width:672px; height:420px;"><img src="aset/status-sistem.jpg" alt="Status sistem"></div>
+  <p class="abs caption" style="left:544px; top:586px; width:672px;">Halaman Status Sistem (data simulasi)</p>
+
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">10</p>
+  <aside class="notes">Teks Prasyarat dan Kebijakan Privasi masih draf, perlu ditinjau Bagian Hukum. Status Sistem akan dihubungkan ke pemantauan server pada versi produksi.</aside>
+</section></div>
+
+<!-- ===================== 11. PAKET PENGEMBANGAN ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Potensi pengembangan</h2>
+  <div class="abs card" style="left:64px; top:150px; width:264px; height:500px; background:#08245C;"></div>
+  <p class="abs" style="left:88px; top:170px; width:216px; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#FF9800;">Paket saat ini</p>
+  <p class="abs" style="left:88px; top:194px; width:216px; font-size:24px; font-weight:700; color:#fff;">Minimalis</p>
+  <p class="abs" style="left:88px; top:226px; width:216px; font-size:40px; font-weight:700; line-height:1; color:#FF9800;">Rp 25 jt</p>
+  <p class="abs" style="left:88px; top:276px; width:216px; font-size:19px; font-style:italic; color:#C9D6EE;">Portal resmi siap tayang</p>
+  <p class="abs" style="left:88px; top:316px; width:216px; font-size:15px; font-weight:700; color:#C9D6EE;">Termasuk:</p>
+  <p class="abs" style="left:88px; top:346px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:112px; top:344px; width:196px; font-size:19px; line-height:1.25; color:#fff;">Portal 5–10 kategori dokumen</p>
+  <p class="abs" style="left:88px; top:398px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:112px; top:396px; width:196px; font-size:19px; line-height:1.25; color:#fff;">Pencarian &amp; pratinjau PDF</p>
+  <p class="abs" style="left:88px; top:450px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:112px; top:448px; width:196px; font-size:19px; line-height:1.25; color:#fff;">Login admin &amp; operator dinas</p>
+  <p class="abs" style="left:88px; top:502px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:112px; top:500px; width:196px; font-size:19px; line-height:1.25; color:#fff;">Kelola data oleh operator</p>
+  <p class="abs" style="left:88px; top:554px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:112px; top:552px; width:196px; font-size:19px; line-height:1.25; color:#fff;">Responsif &amp; mode gelap</p>
+  <p class="abs" style="left:88px; top:606px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:112px; top:604px; width:196px; font-size:19px; line-height:1.25; color:#fff;">Pemeliharaan 1 tahun</p>
+  <div class="abs card" style="left:360px; top:150px; width:264px; height:500px; "></div>
+  <p class="abs" style="left:384px; top:170px; width:216px; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#0D47A1;">Paket 2</p>
+  <p class="abs" style="left:384px; top:194px; width:216px; font-size:24px; font-weight:700; color:#08245C;">Standar</p>
+  <p class="abs" style="left:384px; top:226px; width:216px; font-size:40px; font-weight:700; line-height:1; color:#0D47A1;">Rp 50 jt</p>
+  <p class="abs" style="left:384px; top:276px; width:216px; font-size:19px; font-style:italic; color:#5B6B82;">Layanan informasi aktif</p>
+  <p class="abs" style="left:384px; top:316px; width:216px; font-size:15px; font-weight:700; color:#5B6B82;">Paket sebelumnya, plus:</p>
+  <p class="abs" style="left:384px; top:346px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:408px; top:344px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Hak akses berjenjang (verifikator)</p>
+  <p class="abs" style="left:384px; top:398px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:408px; top:396px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Log aktivitas petugas</p>
+  <p class="abs" style="left:384px; top:450px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:408px; top:448px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Pencarian isi PDF (OCR)</p>
+  <p class="abs" style="left:384px; top:502px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:408px; top:500px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Permintaan dokumen lewat pesan</p>
+  <p class="abs" style="left:384px; top:554px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:408px; top:552px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Statistik pengunjung riil</p>
+  <div class="abs card" style="left:656px; top:150px; width:264px; height:500px; "></div>
+  <p class="abs" style="left:680px; top:170px; width:216px; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#0D47A1;">Paket 3</p>
+  <p class="abs" style="left:680px; top:194px; width:216px; font-size:24px; font-weight:700; color:#08245C;">Profesional</p>
+  <p class="abs" style="left:680px; top:226px; width:216px; font-size:40px; font-weight:700; line-height:1; color:#0D47A1;">Rp 100 jt</p>
+  <p class="abs" style="left:680px; top:276px; width:216px; font-size:19px; font-style:italic; color:#5B6B82;">Terhubung sistem Pemda</p>
+  <p class="abs" style="left:680px; top:316px; width:216px; font-size:15px; font-weight:700; color:#5B6B82;">Paket sebelumnya, plus:</p>
+  <p class="abs" style="left:680px; top:346px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:704px; top:344px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Relasi &amp; konsolidasi peraturan</p>
+  <p class="abs" style="left:680px; top:398px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:704px; top:396px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">API berbagi data ke portal Pemda</p>
+  <p class="abs" style="left:680px; top:450px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:704px; top:448px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Pendampingan teknis operator</p>
+  <p class="abs" style="left:680px; top:502px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:704px; top:500px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Survei kepuasan (IKM)</p>
+  <p class="abs" style="left:680px; top:554px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:704px; top:552px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Backup rutin</p>
+  <div class="abs card" style="left:952px; top:150px; width:264px; height:500px; "></div>
+  <p class="abs" style="left:976px; top:170px; width:216px; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#0D47A1;">Paket 4</p>
+  <p class="abs" style="left:976px; top:194px; width:216px; font-size:24px; font-weight:700; color:#08245C;">Terintegrasi</p>
+  <p class="abs" style="left:976px; top:226px; width:216px; font-size:40px; font-weight:700; line-height:1; color:#0D47A1;">Rp 300 jt</p>
+  <p class="abs" style="left:976px; top:276px; width:216px; font-size:19px; font-style:italic; color:#5B6B82;">Ekosistem hukum daerah</p>
+  <p class="abs" style="left:976px; top:316px; width:216px; font-size:15px; font-weight:700; color:#5B6B82;">Paket sebelumnya, plus:</p>
+  <p class="abs" style="left:976px; top:346px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:1000px; top:344px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Chatbot AI otomatis</p>
+  <p class="abs" style="left:976px; top:398px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:1000px; top:396px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Aplikasi Android &amp; iOS</p>
+  <p class="abs" style="left:976px; top:450px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:1000px; top:448px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Digitalisasi arsip sejak 1993</p>
+  <p class="abs" style="left:976px; top:502px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:1000px; top:500px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Email broadcast info terbaru</p>
+  <p class="abs" style="left:976px; top:554px; width:18px; font-size:15px; color:#FF9800;"><i class="fa-solid fa-check"></i></p>
+  <p class="abs" style="left:1000px; top:552px; width:196px; font-size:19px; line-height:1.25; color:#1E293B;">Pelacakan pembentukan Perda</p>
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">11</p>
+  <aside class="notes">Versi yang dipresentasikan adalah paket Minimalis sesuai pagu Rp 25 juta, sudah termasuk login admin dan pengelolaan data oleh operator dinas. Tiga paket berikutnya bersifat kumulatif dan merupakan estimasi awal (termasuk PPN); rincian akhir dituangkan dalam RAB terpisah sesuai ketersediaan anggaran.</aside>
+</section></div>
+
+<!-- ===================== 12. TAHAPAN ===================== -->
+<div class="frame"><section class="slide" data-layout="judul-saja">
+  <h2 class="abs title">Bisa ditempuh bertahap</h2>
+  <div class="abs icon" style="left:64px; top:160px; font-size:24px; font-weight:700;">1</div>
+  <p class="abs" style="left:64px; top:228px; width:264px; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#FF9800;">TA 2026</p>
+  <p class="abs h3" style="left:64px; top:254px; width:264px;">Minimalis</p>
+  <p class="abs p" style="left:64px; top:290px; width:248px;">Portal resmi tayang, dikelola operator dinas</p>
+  <div class="abs icon navy" style="left:360px; top:160px; font-size:24px; font-weight:700;">2</div>
+  <p class="abs" style="left:360px; top:228px; width:264px; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#0D47A1;">Tahap berikut</p>
+  <p class="abs h3" style="left:360px; top:254px; width:264px;">Standar</p>
+  <p class="abs p" style="left:360px; top:290px; width:248px;">Permintaan dokumen lewat pesan, cari sampai isi PDF</p>
+  <div class="abs icon navy" style="left:656px; top:160px; font-size:24px; font-weight:700;">3</div>
+  <p class="abs" style="left:656px; top:228px; width:264px; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#0D47A1;">Tahap berikut</p>
+  <p class="abs h3" style="left:656px; top:254px; width:264px;">Profesional</p>
+  <p class="abs p" style="left:656px; top:290px; width:248px;">Berbagi data ke portal Pemda lewat API, operator didampingi</p>
+  <div class="abs icon navy" style="left:952px; top:160px; font-size:24px; font-weight:700;">4</div>
+  <p class="abs" style="left:952px; top:228px; width:264px; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#0D47A1;">Jangka panjang</p>
+  <p class="abs h3" style="left:952px; top:254px; width:264px;">Terintegrasi</p>
+  <p class="abs p" style="left:952px; top:290px; width:248px;">Chatbot AI, aplikasi seluler, arsip sejak 1993, pelacakan Perda</p>
+  <div class="abs card" style="left:64px; top:456px; width:1152px; height:156px;"></div>
+  <div class="abs icon navy" style="left:96px; top:488px;"><i class="fa-solid fa-coins"></i></div>
+  <p class="abs h3" style="left:168px; top:488px; width:440px;">Nilai paket</p>
+  <p class="abs p" style="left:168px; top:524px; width:440px;">Estimasi termasuk PPN. Bila bertahap, nilai disesuaikan dengan pekerjaan yang sudah ada.</p>
+  <div class="abs icon" style="left:656px; top:488px;"><i class="fa-solid fa-award"></i></div>
+  <p class="abs h3" style="left:728px; top:488px; width:456px;">Manfaat</p>
+  <p class="abs p" style="left:728px; top:524px; width:456px;">Mendukung standar Permenkumham 8/2019 dan penilaian JDIH oleh BPHN.</p>
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">12</p>
+  <aside class="notes">Pengembangan tidak harus sekaligus; tiap tahap bisa mengikuti anggaran tahun berjalan. Paket Standar adalah langkah paling penting berikutnya karena membuka layanan permintaan dokumen lewat pesan dan pencarian sampai ke isi dokumen PDF.</aside>
+</section></div>
+
+<!-- ===================== 13. LANGKAH BERIKUTNYA ===================== -->
+<div class="frame"><section class="slide dark" data-layout="penutup">
+  <h2 class="abs title">Langkah berikutnya</h2>
+
+  <div class="abs icon" style="left:64px; top:196px; font-size:24px; font-weight:700;">1</div>
+  <p class="abs h3" style="left:64px; top:268px; width:208px;">Konfirmasi data</p>
+  <p class="abs p" style="left:64px; top:304px; width:208px;">Kontak, alamat, dan teks profil instansi</p>
+
+  <div class="abs icon" style="left:300px; top:196px; font-size:24px; font-weight:700;">2</div>
+  <p class="abs h3" style="left:300px; top:268px; width:208px;">Serahkan dokumen</p>
+  <p class="abs p" style="left:300px; top:304px; width:208px;">Keputusan Walikota, Surat Edaran, Monografi</p>
+
+  <div class="abs icon" style="left:536px; top:196px; font-size:24px; font-weight:700;">3</div>
+  <p class="abs h3" style="left:536px; top:268px; width:208px;">Bangun server</p>
+  <p class="abs p" style="left:536px; top:304px; width:208px;">Database, login nyata, unggah PDF</p>
+
+  <div class="abs icon" style="left:772px; top:196px; font-size:24px; font-weight:700;">4</div>
+  <p class="abs h3" style="left:772px; top:268px; width:208px;">Tayang di domain</p>
+  <p class="abs p" style="left:772px; top:304px; width:208px;">Migrasi ke jdih.jayapurakota.go.id</p>
+
+  <div class="abs icon" style="left:1008px; top:196px; font-size:24px; font-weight:700;">5</div>
+  <p class="abs h3" style="left:1008px; top:268px; width:208px;">Pelatihan petugas</p>
+  <p class="abs p" style="left:1008px; top:304px; width:208px;">Pengelolaan dokumen sehari-hari</p>
+
+  <p class="abs" style="left:64px; top:468px; width:700px; font-size:44px; font-weight:700;">Terima kasih</p>
+  <p class="abs p" style="left:64px; top:528px; width:700px;">Masukan dari pertemuan ini menjadi dasar versi berikutnya.</p>
+  <p class="abs footer">JDIH Kota Jayapura · Presentasi Fitur Utama</p>
+  <p class="abs ft-pic">PIC: Janzen Faidiban · 082199558191 · Powered by</p><img class="abs ft-logo" src="aset/nokensoft-logo.png" alt="Logo Nokensoft"><p class="abs ft-brand">Nokensoft.com</p><p class="abs pageno">13</p>
+  <aside class="notes">Tutup dengan meminta keputusan atas lima langkah ini, terutama penyerahan dokumen dan konfirmasi data kontak.</aside>
+</section></div>
+
+</main>
+
+<script>
+  // Skala slide 1280x720 agar pas dengan lebar bingkai
+  const frames = [...document.querySelectorAll('.frame')];
+  function fit() {
+    frames.forEach((f) => { f.querySelector('.slide').style.transform = `scale(${f.clientWidth / 1280})`; });
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('load', fit);
+  fit();
+
+  // Mode presentasi: satu slide layar penuh, navigasi keyboard/klik
+  let cur = 0;
+  function show(i) {
+    cur = Math.max(0, Math.min(frames.length - 1, i));
+    frames.forEach((f, j) => f.classList.toggle('current', j === cur));
+    requestAnimationFrame(fit);
+  }
+  function startPresent() {
+    document.body.classList.add('present'); show(0);
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+  }
+  function stopPresent() {
+    document.body.classList.remove('present');
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    requestAnimationFrame(fit);
+  }
+  document.addEventListener('keydown', (e) => {
+    if (!document.body.classList.contains('present')) { if (e.key === 'F5' || e.key === 'f') { e.preventDefault(); startPresent(); } return; }
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) show(cur + 1);
+    if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) show(cur - 1);
+    if (e.key === 'Escape') stopPresent();
+  });
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) stopPresent(); });
+  document.addEventListener('click', (e) => { if (document.body.classList.contains('present')) show(cur + (e.clientX > innerWidth / 3 ? 1 : -1)); });
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk Petugas — JDIH Kota Jayapura</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/kotajayapura-logo.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="assets/js/data-dokumen.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script>if (JDIH.currentUser()) location.replace('admin.html');</script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-gradient-to-br from-navy-700 via-navy-800 to-navy-950 text-slate-700 flex flex-col">
+
+  <button type="button" onclick="JDIH_THEME.toggle()" title="Ganti mode terang/gelap" aria-label="Ganti mode terang/gelap"
+          class="fixed top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white">
+    <span class="theme-icon-moon"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-icon-sun"><i class="fa-solid fa-sun text-orange-400"></i></span>
+  </button>
+
+  <main class="flex-1 grid place-items-center px-4 py-12" x-data="loginPage()">
+    <div class="w-full max-w-md">
+      <a href="index.html" class="flex flex-col items-center gap-3 text-white text-center">
+        <img src="assets/kotajayapura-logo.png" alt="Logo Kota Jayapura" class="h-20 w-auto">
+        <span class="text-3xl font-extrabold tracking-tight">JDIH Kota Jayapura</span>
+      </a>
+
+      <form @submit.prevent="submit()" class="mt-8 bg-white rounded-lg shadow-xl p-8 space-y-5">
+        <div>
+          <h1 class="text-xl font-extrabold text-navy-800">Masuk Petugas</h1>
+          <p class="text-sm text-slate-500 mt-1">Masuk untuk mengelola dokumen dan data JDIH.</p>
+        </div>
+
+        <div x-show="error" x-cloak class="bg-red-50 text-red-700 text-sm rounded px-4 py-3">
+          <i class="fa-solid fa-circle-exclamation mr-1.5"></i><span x-text="error"></span>
+        </div>
+
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Nama Pengguna</span>
+          <div class="mt-1.5 flex items-center border border-slate-200 rounded focus-within:border-navy-700">
+            <i class="fa-solid fa-user text-slate-400 px-3"></i>
+            <input x-model="username" type="text" autocomplete="username" required class="flex-1 min-w-0 py-2.5 pr-3 focus:outline-none">
+          </div>
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-bold text-slate-600">Kata Sandi</span>
+          <div class="mt-1.5 flex items-center border border-slate-200 rounded focus-within:border-navy-700">
+            <i class="fa-solid fa-lock text-slate-400 px-3"></i>
+            <input x-model="password" :type="show ? 'text' : 'password'" autocomplete="current-password" required class="flex-1 min-w-0 py-2.5 focus:outline-none">
+            <button type="button" @click="show=!show" class="px-3 text-slate-400 hover:text-navy-700" aria-label="Tampilkan kata sandi">
+              <span x-show="!show"><i class="fa-solid fa-eye"></i></span>
+              <span x-show="show" x-cloak><i class="fa-solid fa-eye-slash"></i></span>
+            </button>
+          </div>
+        </label>
+
+        <button type="submit" :disabled="loading"
+                class="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-60 text-white font-bold py-3 rounded">
+          <span x-show="!loading">Masuk</span>
+          <span x-show="loading" x-cloak><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memeriksa...</span>
+        </button>
+
+        <div class="text-xs bg-brand-50 text-navy-800 rounded px-4 py-3">
+          <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i>Mode simulasi</p>
+          <p class="mt-1">Belum terhubung ke server — data tersimpan di browser ini. Isi otomatis akun contoh:</p>
+          <div class="mt-2.5 grid grid-cols-2 gap-2">
+            <template x-for="d in demos" :key="d.role">
+              <button type="button" @click="fill(d)"
+                      class="flex items-center justify-center gap-2 rounded border border-navy-700 text-navy-700 hover:bg-navy-700 hover:text-white font-bold py-2 transition-colors"
+                      :title="d.username + ' / ' + d.password">
+                <span x-show="d.role === 'admin'"><i class="fa-solid fa-user-shield"></i></span>
+                <span x-show="d.role === 'operator'"><i class="fa-solid fa-user-pen"></i></span>
+                <span x-text="'Isi sebagai ' + d.label"></span>
+              </button>
+            </template>
+          </div>
+          <p class="mt-2 text-slate-500">
+            <template x-for="(d, i) in demos" :key="d.role">
+              <span><span x-show="i > 0"> · </span><span x-text="d.label + ': '"></span><b x-text="d.username + ' / ' + d.password"></b></span>
+            </template>
+          </p>
+        </div>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-white/80">
+        <a href="index.html" class="hover:text-white"><i class="fa-solid fa-arrow-left mr-1.5"></i>Kembali ke situs</a>
+      </p>
+    </div>
+  </main>
+
+  <script>
+    function loginPage() {
+      return {
+        username: '', password: '', show: false, loading: false, error: '',
+        demos: JDIH.DEMO_USERS,
+        fill(d) { this.username = d.username; this.password = d.password; this.error = ''; },
+        submit() {
+          this.error = '';
+          this.loading = true;
+          // Jeda singkat untuk mensimulasikan permintaan ke server
+          setTimeout(() => {
+            const res = JDIH.login(this.username, this.password);
+            if (res.user) {
+              location.href = 'admin.html';
+            } else {
+              this.loading = false;
+              this.error = res.error;
+            }
+          }, 600);
+        },
+      };
+    }
+  </script>
+</body>
+</html>

@@ -8,267 +8,122 @@
   <link rel="icon" type="image/png" href="assets/kotajayapura-logo.png">
   <link rel="apple-touch-icon" href="assets/kotajayapura-logo.png">
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            navy:   { 700:'#0d47a1', 800:'#0b3a8c', 900:'#0a2a6b', 950:'#08245c' },
-            brand:  { 50:'#e8f1fd', 600:'#0d47a1' },
-            orange: { 400:'#ffa726', 500:'#ff9800', 600:'#f08c00' },
-            footer: '#1e293b'
-          },
-          fontFamily: { sans: ['Nunito Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
+  <script src="assets/js/tailwind-config.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="stylesheet" href="assets/css/theme.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome (JS) -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
-  <!-- Alpine.js -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-
+  <script src="assets/js/data-dokumen.js"></script>
+  <script src="assets/js/store.js"></script>
   <style>[x-cloak]{display:none!important}</style>
 </head>
-<body class="font-sans bg-slate-50 text-slate-700 antialiased" x-data="jdih()">
+<body class="font-sans bg-slate-50 text-slate-700 antialiased">
 
-  <!-- ================= TOPBAR ================= -->
-  <div class="bg-navy-950 text-white text-xs sm:text-sm">
-    <div class="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-center sm:justify-between gap-4">
-      <p class="hidden sm:block">Selamat Datang di Portal Resmi JDIH Kota Jayapura</p>
-      <div class="flex items-center gap-3">
-        <a href="tel:0967123456" class="hover:text-orange-400"><i class="fa-solid fa-phone text-orange-400 mr-1.5"></i>(0967) 123456</a>
-        <span class="opacity-50">|</span>
-        <a href="mailto:jdih@jayapurakota.go.id" class="hover:text-orange-400"><i class="fa-solid fa-envelope text-orange-400 mr-1.5"></i>jdih@jayapurakota.go.id</a>
+  <div id="site-header"></div>
+
+  <div x-data="homePage()">
+    <!-- ================= HERO + PENCARIAN ================= -->
+    <section class="bg-gradient-to-br from-navy-700 via-navy-800 to-navy-950 text-white">
+      <div class="max-w-4xl mx-auto px-4 py-16 lg:py-20 text-center">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight">Pusat Dokumentasi Hukum Terpadu</h1>
+
+        <form action="dokumen.html" method="get" class="mt-10 max-w-3xl mx-auto flex rounded-md overflow-hidden shadow-lg">
+          <input name="q" type="search" placeholder="Cari nomor, tahun, atau judul peraturan..."
+                 class="flex-1 min-w-0 px-5 py-3.5 text-slate-700 border-0 focus:outline-none focus:ring-0">
+          <button type="submit" class="bg-orange-500 hover:bg-orange-600 px-5 sm:px-8 font-bold text-white whitespace-nowrap">
+            <i class="fa-solid fa-magnifying-glass sm:hidden"></i><span class="hidden sm:inline">Cari Dokumen</span>
+          </button>
+        </form>
       </div>
-    </div>
+    </section>
+
+    <!-- ================= KONTEN ================= -->
+    <main class="max-w-6xl mx-auto px-4 py-12 grid lg:grid-cols-3 gap-8">
+
+      <div class="lg:col-span-2 space-y-12">
+        <!-- Statistik -->
+        <section>
+          <h2 class="inline-block text-2xl font-extrabold text-navy-800 pb-3 border-b-2 border-navy-800">Statistik Dokumen Hukum</h2>
+          <div class="mt-6 grid sm:grid-cols-3 gap-5">
+            <template x-for="s in stats" :key="s.label">
+              <a :href="s.href" class="block bg-white rounded-lg shadow-sm border-l-4 border-navy-800 py-7 text-center hover:shadow-md transition-shadow">
+                <p class="text-4xl font-extrabold text-navy-800" x-text="JDIH.formatNumber(s.value)"></p>
+                <p class="mt-2 text-sm tracking-[0.15em] uppercase text-slate-500" x-text="s.label"></p>
+              </a>
+            </template>
+          </div>
+        </section>
+
+        <!-- Dokumen terbaru -->
+        <section>
+          <div class="flex items-end justify-between gap-4">
+            <h2 class="inline-block text-2xl font-extrabold text-navy-800 pb-3 border-b-2 border-navy-800">Dokumen Terbaru</h2>
+            <a href="dokumen.html" class="text-sm font-bold text-navy-700 hover:underline pb-3 whitespace-nowrap">
+              Lihat semua <i class="fa-solid fa-arrow-right ml-1"></i>
+            </a>
+          </div>
+
+          <div class="mt-6 space-y-5">
+            <template x-for="d in latest" :key="d.id">
+              <article class="bg-white rounded-lg shadow-sm border-l-4 border-orange-400 p-6">
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
+                  <span class="px-2 py-0.5 rounded bg-brand-50 text-navy-700 text-xs font-extrabold" x-text="d.type"></span>
+                  <span x-show="d.contoh" class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs font-bold" title="Dokumen contoh untuk simulasi">Contoh</span>
+                  <span><i class="fa-regular fa-calendar text-brand-600 mr-1.5"></i><span x-text="JDIH.formatDate(d.date)"></span></span>
+                  <span><i class="fa-solid fa-download text-slate-400 mr-1.5"></i><span x-text="JDIH.formatNumber(d.downloads)"></span> kali diunduh</span>
+                </div>
+                <h3 class="mt-3 text-lg font-extrabold text-slate-900">
+                  <a :href="'detail.html?id=' + d.id" class="hover:text-navy-700" x-text="d.title"></a>
+                </h3>
+                <p class="mt-2 text-slate-600" x-text="d.desc"></p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <button @click="d.downloads = JDIH.download(d.id)" class="bg-navy-800 hover:bg-navy-900 text-white text-sm px-4 py-2 rounded">Unduh PDF</button>
+                  <a :href="'detail.html?id=' + d.id" class="border border-slate-200 hover:border-navy-700 hover:text-navy-700 text-sm px-4 py-2 rounded">Detail</a>
+                </div>
+              </article>
+            </template>
+          </div>
+        </section>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="bg-white rounded-lg shadow-sm p-6 lg:sticky lg:top-20">
+          <h3 class="text-xl font-extrabold text-navy-800 pb-3 border-b border-slate-200">Kategori Hukum</h3>
+          <ul class="mt-2 divide-y divide-slate-100">
+            <template x-for="c in categories" :key="c.code">
+              <li>
+                <a :href="'dokumen.html?kategori=' + c.code" class="flex items-center justify-between py-3 hover:text-navy-700">
+                  <span x-text="c.name"></span>
+                  <span class="min-w-[2.25rem] text-center text-xs font-extrabold px-2 py-1 rounded-full bg-brand-50 text-navy-800" x-text="c.count"></span>
+                </a>
+              </li>
+            </template>
+          </ul>
+        </div>
+      </aside>
+    </main>
   </div>
 
-  <!-- ================= HEADER ================= -->
-  <header class="bg-white">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="#" @click="filter='ALL'" class="flex items-center gap-4">
-        <img src="assets/kotajayapura-logo.png" alt="Logo Kota Jayapura" class="h-16 w-auto">
-        <span class="text-3xl sm:text-4xl font-extrabold tracking-tight text-navy-700">JDIH Kota Jayapura</span>
-      </a>
-      <button class="lg:hidden w-10 h-10 rounded border border-slate-200 text-navy-700 grid place-items-center"
-              @click="mobileMenu=!mobileMenu" aria-label="Menu">
-        <i class="fa-solid" :class="mobileMenu ? 'fa-xmark' : 'fa-bars'"></i>
-      </button>
-    </div>
-  </header>
-
-  <!-- ================= NAVIGASI (kategori dokumen) ================= -->
-  <nav class="sticky top-0 z-40 bg-navy-700 text-white shadow">
-    <div class="max-w-6xl mx-auto px-4">
-      <ul class="hidden lg:flex font-bold text-[15px]">
-        <template x-for="c in categories" :key="c.code">
-          <li>
-            <a href="#dokumen" @click="filter=c.code"
-               class="block px-5 py-4 transition-colors"
-               :class="filter===c.code ? 'bg-navy-900' : 'hover:bg-navy-900'"
-               x-text="c.name"></a>
-          </li>
-        </template>
-      </ul>
-      <ul x-show="mobileMenu" x-cloak x-transition class="lg:hidden flex flex-col py-2 font-bold" @click="mobileMenu=false">
-        <template x-for="c in categories" :key="c.code">
-          <li>
-            <a href="#dokumen" @click="filter=c.code" class="block px-3 py-3 rounded"
-               :class="filter===c.code && 'bg-navy-900'" x-text="c.name"></a>
-          </li>
-        </template>
-      </ul>
-    </div>
-  </nav>
-
-  <!-- ================= HERO + PENCARIAN ================= -->
-  <section class="bg-gradient-to-br from-navy-700 via-navy-800 to-navy-950 text-white">
-    <div class="max-w-4xl mx-auto px-4 py-16 lg:py-20 text-center">
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight">Pusat Dokumentasi Hukum Terpadu</h1>
-
-      <form @submit.prevent="doSearch()" class="mt-10 max-w-3xl mx-auto flex rounded-md overflow-hidden shadow-lg">
-        <input x-model="query" type="search" placeholder="Cari nomor, tahun, atau judul peraturan..."
-               class="flex-1 min-w-0 px-5 py-3.5 text-slate-700 border-0 focus:outline-none focus:ring-0">
-        <button type="submit" class="bg-orange-500 hover:bg-orange-600 px-5 sm:px-8 font-bold text-white whitespace-nowrap">
-          <i class="fa-solid fa-magnifying-glass sm:hidden"></i><span class="hidden sm:inline">Cari Dokumen</span>
-        </button>
-      </form>
-    </div>
-  </section>
-
-  <!-- ================= KONTEN ================= -->
-  <main class="max-w-6xl mx-auto px-4 py-12 grid lg:grid-cols-3 gap-8">
-
-    <!-- Kolom utama -->
-    <div class="lg:col-span-2 space-y-12">
-
-      <!-- Statistik -->
-      <section>
-        <h2 class="inline-block text-2xl font-extrabold text-navy-800 pb-3 border-b-2 border-navy-800">Statistik Dokumen Hukum</h2>
-        <div class="mt-6 grid sm:grid-cols-3 gap-5">
-          <template x-for="s in stats" :key="s.label">
-            <div class="bg-white rounded-lg shadow-sm border-l-4 border-navy-800 py-7 text-center">
-              <p class="text-4xl font-extrabold text-navy-800" x-text="s.value.toLocaleString('en-US')"></p>
-              <p class="mt-2 text-sm tracking-[0.15em] uppercase text-slate-500" x-text="s.label"></p>
-            </div>
-          </template>
-        </div>
-      </section>
-
-      <!-- Dokumen terbaru -->
-      <section id="dokumen" class="scroll-mt-20">
-        <div class="flex items-end justify-between gap-4">
-          <h2 class="inline-block text-2xl font-extrabold text-navy-800 pb-3 border-b-2 border-navy-800"
-              x-text="filter==='ALL' ? 'Dokumen Terbaru' : categoryName(filter)"></h2>
-          <button x-show="filter!=='ALL' || query" x-cloak @click="filter='ALL'; query=''"
-                  class="text-sm font-semibold text-navy-700 hover:underline pb-3">
-            <i class="fa-solid fa-xmark mr-1"></i>Reset
-          </button>
-        </div>
-
-        <div class="mt-6 space-y-5">
-          <template x-for="d in filteredDocs" :key="d.title">
-            <article class="bg-white rounded-lg shadow-sm border-l-4 border-orange-400 p-6">
-              <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
-                <span class="px-2 py-0.5 rounded bg-brand-50 text-navy-700 text-xs font-extrabold" x-text="d.type"></span>
-                <span><i class="fa-regular fa-calendar text-brand-600 mr-1.5"></i><span x-text="d.date"></span></span>
-                <span><i class="fa-solid fa-eye text-slate-400 mr-1.5"></i><span x-text="d.downloads.toLocaleString('en-US')"></span> kali diunduh</span>
-              </div>
-              <h3 class="mt-3 text-lg font-extrabold text-slate-900">
-                <a href="#" class="hover:text-navy-700" x-text="d.title"></a>
-              </h3>
-              <p class="mt-2 text-slate-600" x-text="d.desc"></p>
-              <a href="#" class="mt-4 inline-block bg-navy-800 hover:bg-navy-900 text-white text-sm px-4 py-2 rounded">Unduh PDF</a>
-            </article>
-          </template>
-
-          <div x-show="filteredDocs.length===0" x-cloak class="bg-white rounded-lg shadow-sm p-12 text-center text-slate-500">
-            <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
-            <p class="mt-3">Dokumen tidak ditemukan.</p>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <!-- Sidebar -->
-    <aside>
-      <div class="bg-white rounded-lg shadow-sm p-6 lg:sticky lg:top-20">
-        <h3 class="text-xl font-extrabold text-navy-800 pb-3 border-b border-slate-200">Kategori Hukum</h3>
-        <ul class="mt-2 divide-y divide-slate-100">
-          <template x-for="c in categories" :key="c.code">
-            <li>
-              <a href="#dokumen" @click="filter=c.code"
-                 class="flex items-center justify-between py-3 hover:text-navy-700"
-                 :class="filter===c.code && 'text-navy-700 font-bold'">
-                <span x-text="c.name"></span>
-                <span class="min-w-[2.25rem] text-center text-xs font-extrabold px-2 py-1 rounded-full bg-brand-50 text-navy-800" x-text="c.count"></span>
-              </a>
-            </li>
-          </template>
-        </ul>
-      </div>
-    </aside>
-  </main>
-
-  <!-- ================= FOOTER ================= -->
-  <footer class="bg-footer text-slate-300 mt-8">
-    <div class="max-w-6xl mx-auto px-4 pt-14 pb-8">
-      <div class="grid md:grid-cols-4 gap-10">
-        <div class="md:col-span-2">
-          <div class="flex items-center gap-3">
-            <img src="assets/kotajayapura-logo.png" alt="" class="h-10 w-auto">
-            <h4 class="text-lg font-extrabold text-white">JDIH Kota Jayapura</h4>
-          </div>
-          <p class="mt-4 max-w-md leading-relaxed">
-            Jaringan Dokumentasi dan Informasi Hukum Pemerintah Kota Jayapura. Wadah pendayagunaan bersama atas dokumen
-            peraturan perundang-undangan yang ditata dan diintegrasikan secara sistematis.
-          </p>
-        </div>
-        <div>
-          <h4 class="text-lg font-extrabold text-white">Tautan Cepat</h4>
-          <ul class="mt-4 space-y-2.5 text-sm">
-            <li><a href="#" class="hover:text-orange-400">Tentang JDIH</a></li>
-            <li><a href="#" class="hover:text-orange-400">Panduan Pengguna</a></li>
-            <li><a href="#" class="hover:text-orange-400">Kebijakan Privasi</a></li>
-            <li><a href="#" class="hover:text-orange-400">Bantuan / FAQ</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-lg font-extrabold text-white">Kontak Kami</h4>
-          <ul class="mt-4 space-y-3 text-sm">
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 shrink-0 rounded-full bg-white/10 text-orange-400 grid place-items-center"><i class="fa-solid fa-location-dot"></i></span>
-              Jl. Raya Abepura, Jayapura
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 shrink-0 rounded-full bg-white/10 text-orange-400 grid place-items-center"><i class="fa-solid fa-phone"></i></span>
-              <a href="tel:0967123456" class="hover:text-orange-400">(0967) 123456</a>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 shrink-0 rounded-full bg-white/10 text-orange-400 grid place-items-center"><i class="fa-solid fa-envelope"></i></span>
-              <a href="mailto:jdih@jayapurakota.go.id" class="hover:text-orange-400 break-all">jdih@jayapurakota.go.id</a>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 shrink-0 rounded-full bg-white/10 text-orange-400 grid place-items-center"><i class="fa-solid fa-clock"></i></span>
-              Senin - Jumat, 08.00 - 16.00 WIT
-            </li>
-          </ul>
-        </div>
-      </div>
-      <p class="mt-12 pt-6 border-t border-slate-600 text-center text-sm">
-        &copy; 2026 JDIH Pemerintah Kota Jayapura. Seluruh hak cipta dilindungi undang-undang.
-      </p>
-    </div>
-  </footer>
+  <div id="site-footer"></div>
+  <script src="assets/js/layout.js"></script>
 
   <script>
-    function jdih() {
+    function homePage() {
+      const db = JDIH.load();
+      const count = (code) => db.docs.filter((d) => d.type === code).length;
       return {
-        mobileMenu: false,
-        query: '',
-        filter: 'ALL',
         stats: [
-          { label: 'Peraturan Daerah',   value: 1248 },
-          { label: 'Peraturan Walikota', value: 3562 },
-          { label: 'Dokumen PDF',        value: 850 },
+          { label: 'Peraturan Daerah',   value: count('PERDA'),   href: 'dokumen.html?kategori=PERDA' },
+          { label: 'Peraturan Walikota', value: count('PERWALI'), href: 'dokumen.html?kategori=PERWALI' },
+          { label: 'Total Dokumen',      value: db.docs.length,   href: 'dokumen.html' },
         ],
-        categories: [
-          { name: 'Peraturan Daerah',   code: 'PERDA',   count: 124 },
-          { name: 'Peraturan Walikota', code: 'PERWALI', count: 342 },
-          { name: 'Keputusan Walikota', code: 'KEPWALI', count: 215 },
-          { name: 'Surat Edaran',       code: 'SE',      count: 89 },
-          { name: 'Monografi Hukum',    code: 'MONO',    count: 12 },
-        ],
-        docs: [
-          { type: 'PERDA', date: '12 Oktober 2026', downloads: 1204,
-            title: 'Peraturan Daerah Kota Jayapura Nomor 5 Tahun 2026 tentang Penyelenggaraan Pendidikan',
-            desc: 'Tentang perubahan atas Peraturan Daerah Nomor 3 Tahun 2022 terkait standar operasional pendidikan daerah.' },
-          { type: 'PERWALI', date: '05 Oktober 2026', downloads: 890,
-            title: 'Peraturan Walikota Jayapura Nomor 42 Tahun 2026 tentang Tarif Retribusi Parkir',
-            desc: 'Penyesuaian tarif retribusi parkir tepi jalan umum di wilayah Kota Jayapura untuk tahun anggaran 2026-2027.' },
-          { type: 'KEPWALI', date: '28 September 2026', downloads: 450,
-            title: 'Keputusan Walikota Nomor 188.4/2026 tentang Penetapan Tim Evaluasi Kinerja',
-            desc: 'Pembentukan tim evaluasi kinerja pegawai negeri sipil di lingkungan Pemerintah Kota Jayapura.' },
-          { type: 'PERDA', date: '15 September 2026', downloads: 2100,
-            title: 'Peraturan Daerah Kota Jayapura Nomor 4 Tahun 2026 tentang Pengelolaan Sampah',
-            desc: 'Regulasi baru terkait pengelolaan dan pemilahan sampah rumah tangga serta sanksi administratif bagi pelanggar.' },
-        ],
-        categoryName(code) { return (this.categories.find(c => c.code === code) || {}).name; },
-        get filteredDocs() {
-          const q = this.query.toLowerCase().trim();
-          return this.docs.filter(d =>
-            (this.filter === 'ALL' || d.type === this.filter) &&
-            (!q || (d.title + ' ' + d.desc).toLowerCase().includes(q))
-          );
-        },
-        doSearch() { document.getElementById('dokumen').scrollIntoView({ behavior: 'smooth' }); },
-      }
+        categories: db.categories.map((c) => ({ ...c, count: count(c.code) })),
+        latest: [...db.docs].sort(JDIH.byDateDesc).slice(0, 4),
+      };
     }
   </script>
 </body>

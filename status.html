@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status Sistem — JDIH Kota Jayapura</title>
+  <link rel="icon" type="image/png" href="assets/kotajayapura-logo.png">
+  <link rel="apple-touch-icon" href="assets/kotajayapura-logo.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="assets/js/data-dokumen.js"></script>
+  <script src="assets/js/store.js"></script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="font-sans bg-slate-50 text-slate-700 antialiased">
+
+  <div id="site-header"></div>
+
+  <div x-data="statusPage()">
+    <section class="bg-gradient-to-br from-navy-700 via-navy-800 to-navy-950 text-white">
+      <div class="max-w-6xl mx-auto px-4 py-10 text-center">
+        <nav class="text-sm text-white/70">
+          <a href="index.html" class="hover:text-white">Beranda</a><span class="mx-2">/</span><span class="text-white">Status Sistem</span>
+        </nav>
+        <h1 class="mt-3 text-3xl sm:text-4xl font-black tracking-tight">Status Sistem</h1>
+      </div>
+    </section>
+
+    <main class="max-w-4xl mx-auto px-4 py-12 space-y-6">
+      <!-- Status keseluruhan -->
+      <section class="rounded-lg shadow-sm p-6 flex flex-wrap items-center gap-4 text-white transition-colors"
+               :class="checking ? 'bg-slate-500' : overall.bg">
+        <span class="text-3xl">
+          <span x-show="checking"><i class="fa-solid fa-spinner fa-spin"></i></span>
+          <span x-show="!checking && overall.level===0"><i class="fa-solid fa-circle-check"></i></span>
+          <span x-show="!checking && overall.level>0" x-cloak><i class="fa-solid fa-triangle-exclamation"></i></span>
+        </span>
+        <div class="flex-1 min-w-[12rem]">
+          <p class="text-xl font-extrabold" x-text="checking ? 'Memeriksa layanan...' : overall.text"></p>
+          <p class="text-sm text-white/80">Pemeriksaan terakhir: <span x-text="lastCheck"></span></p>
+        </div>
+        <button @click="check()" :disabled="checking"
+                class="bg-white/15 hover:bg-white/25 disabled:opacity-50 font-bold text-sm px-4 py-2.5 rounded">
+          <i class="fa-solid fa-rotate mr-1.5"></i>Periksa Ulang
+        </button>
+      </section>
+
+      <!-- Komponen -->
+      <section class="bg-white rounded-lg shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+          <h2 class="font-extrabold text-navy-800">Komponen Layanan</h2>
+          <p class="text-xs text-slate-500">Ketersediaan <span class="sm:hidden">30</span><span class="hidden sm:inline">90</span> hari terakhir</p>
+        </div>
+        <ul class="divide-y divide-slate-100">
+          <template x-for="c in components" :key="c.name">
+            <li class="px-6 py-5">
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span class="text-slate-400 w-5 text-center"><i :class="c.icon"></i></span>
+                <p class="font-bold text-slate-800 flex-1" x-text="c.name"></p>
+                <span class="text-xs text-slate-500" x-show="c.latency && !checking" x-text="c.latency + ' ms'"></span>
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full" :class="LEVELS[c.level].badge">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="LEVELS[c.level].dot"></span>
+                  <span x-text="checking ? 'Memeriksa' : LEVELS[c.level].label"></span>
+                </span>
+              </div>
+              <!-- Riwayat 90 hari: 1 batang = 1 hari -->
+              <div class="mt-3 flex gap-[2px] h-8" role="img" :aria-label="'Riwayat ketersediaan ' + c.name">
+                <template x-for="(d, i) in c.history" :key="i">
+                  <div class="flex-1 rounded-sm cursor-default hover:opacity-70"
+                       :class="[LEVELS[d.level].bar, i < c.history.length - 30 ? 'hidden sm:block' : '']"
+                       @mouseenter="tip = { x: $event.clientX, y: $el.getBoundingClientRect().top, d, name: c.name }"
+                       @mouseleave="tip = null"></div>
+                </template>
+              </div>
+              <div class="mt-1.5 flex justify-between text-xs text-slate-400">
+                <span><span class="sm:hidden">30</span><span class="hidden sm:inline">90</span> hari lalu</span>
+                <span class="font-bold text-slate-500"><span x-text="c.uptime"></span>% uptime</span>
+                <span>Hari ini</span>
+              </div>
+            </li>
+          </template>
+        </ul>
+        <div class="px-6 py-4 border-t border-slate-100 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
+          <template x-for="(l, i) in LEVELS" :key="i">
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" :class="l.bar"></span><span x-text="l.label"></span></span>
+          </template>
+        </div>
+      </section>
+
+      <!-- Riwayat insiden -->
+      <section class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="font-extrabold text-navy-800">Riwayat Insiden</h2>
+        <ol class="mt-4 space-y-5">
+          <template x-for="inc in incidents" :key="inc.title">
+            <li class="border-l-4 pl-4" :class="LEVELS[inc.level].border">
+              <p class="text-xs text-slate-500" x-text="inc.date"></p>
+              <p class="mt-0.5 font-bold text-slate-800" x-text="inc.title"></p>
+              <p class="mt-1 text-sm text-slate-600 leading-relaxed" x-text="inc.desc"></p>
+              <p class="mt-1 text-xs font-bold text-emerald-700"><i class="fa-solid fa-check mr-1"></i>Selesai</p>
+            </li>
+          </template>
+        </ol>
+      </section>
+
+      <p class="text-center text-xs text-slate-400">
+        <i class="fa-solid fa-circle-info mr-1"></i>Halaman ini menampilkan data simulasi. Pada sistem produksi, status diambil dari layanan pemantauan server.
+      </p>
+    </main>
+
+    <!-- Tooltip riwayat -->
+    <div x-show="tip" x-cloak class="fixed z-50 pointer-events-none -translate-x-1/2 -translate-y-full bg-slate-900 text-white text-xs rounded px-3 py-2 shadow-lg whitespace-nowrap"
+         :style="tip && `left:${tip.x}px; top:${tip.y - 8}px`">
+      <template x-if="tip">
+        <div>
+          <p class="font-bold" x-text="tip.name"></p>
+          <p x-text="tip.d.label"></p>
+          <p class="text-white/70"><span x-text="LEVELS[tip.d.level].label"></span> · <span x-text="tip.d.uptime"></span>% uptime</p>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/layout.js"></script>
+
+  <script>
+    function statusPage() {
+      // Status: 0 = normal, 1 = gangguan ringan, 2 = gangguan besar (selalu tampil dengan label, bukan warna saja)
+      const LEVELS = [
+        { label: 'Normal',          bar: 'bg-emerald-500', dot: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700', border: 'border-emerald-500' },
+        { label: 'Gangguan Ringan', bar: 'bg-amber-400',   dot: 'bg-amber-500',   badge: 'bg-amber-50 text-amber-700',     border: 'border-amber-400' },
+        { label: 'Gangguan Besar',  bar: 'bg-red-500',     dot: 'bg-red-500',     badge: 'bg-red-50 text-red-700',         border: 'border-red-500' },
+      ];
+      const DAYS = 90;
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const dayLabel = (ago) => {
+        const d = new Date(today); d.setDate(d.getDate() - ago);
+        return JDIH.formatDate(d.toISOString().slice(0, 10));
+      };
+      // Insiden contoh (hari ke berapa yang lalu → level)
+      const INCIDENTS = [
+        { comp: 'Unduh Dokumen PDF', ago: 12, level: 1, title: 'Unduhan PDF lambat',
+          desc: 'Sebagian pengguna mengalami waktu unduh yang lama akibat kapasitas penyimpanan berkas. Kapasitas telah ditambah.' },
+        { comp: 'Integrasi JDIHN', ago: 37, level: 2, title: 'Sinkronisasi ke JDIHN terputus',
+          desc: 'Pengiriman metadata dokumen ke portal JDIHN gagal selama ±3 jam karena pemeliharaan di sisi JDIHN.' },
+        { comp: 'Pencarian Dokumen', ago: 64, level: 1, title: 'Hasil pencarian tidak lengkap',
+          desc: 'Indeks pencarian tertinggal dari data terbaru. Indeks telah dibangun ulang.' },
+      ];
+      const COMPONENTS = [
+        { name: 'Situs Web JDIH',      icon: 'fa-solid fa-globe' },
+        { name: 'Pencarian Dokumen',   icon: 'fa-solid fa-magnifying-glass' },
+        { name: 'Unduh Dokumen PDF',   icon: 'fa-solid fa-file-pdf' },
+        { name: 'Panel Pengelola',     icon: 'fa-solid fa-gauge' },
+        { name: 'Integrasi JDIHN',     icon: 'fa-solid fa-network-wired' },
+      ];
+      const history = (name) => Array.from({ length: DAYS }, (_, i) => {
+        const ago = DAYS - 1 - i;
+        const inc = INCIDENTS.find((x) => x.comp === name && x.ago === ago);
+        const level = inc ? inc.level : 0;
+        const uptime = level === 2 ? 87.5 : level === 1 ? 98.9 : 100;
+        return { level, uptime, label: dayLabel(ago) };
+      });
+
+      return {
+        LEVELS,
+        tip: null,
+        checking: false,
+        lastCheck: '-',
+        components: COMPONENTS.map((c) => {
+          const h = history(c.name);
+          return { ...c, history: h, level: 0, latency: 0,
+                   uptime: (h.reduce((n, d) => n + d.uptime, 0) / h.length).toFixed(2) };
+        }),
+        incidents: INCIDENTS.map((x) => ({ ...x, date: dayLabel(x.ago) + ' · ' + x.comp })),
+
+        init() {
+          this.check();
+          setInterval(() => this.check(), 60000); // periksa otomatis tiap 1 menit
+        },
+        get overall() {
+          const worst = Math.max(...this.components.map((c) => c.level));
+          return [
+            { level: 0, bg: 'bg-emerald-600', text: 'Semua layanan berjalan normal' },
+            { level: 1, bg: 'bg-amber-500',   text: 'Sebagian layanan mengalami gangguan ringan' },
+            { level: 2, bg: 'bg-red-600',     text: 'Terjadi gangguan besar pada layanan' },
+          ][worst];
+        },
+        // Simulasi pemeriksaan: latensi acak; >400 ms dianggap gangguan ringan
+        check() {
+          this.checking = true;
+          setTimeout(() => {
+            this.components.forEach((c) => {
+              c.latency = Math.round(60 + Math.random() * (c.name === 'Integrasi JDIHN' ? 420 : 220));
+              c.level = c.latency > 400 ? 1 : 0;
+            });
+            this.lastCheck = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Jayapura' }) + ' WIT';
+            this.checking = false;
+          }, 900);
+        },
+      };
+    }
+  </script>
+</body>
+</html>

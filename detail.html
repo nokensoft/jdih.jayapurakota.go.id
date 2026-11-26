@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Dokumen — JDIH Kota Jayapura</title>
+  <link rel="icon" type="image/png" href="assets/kotajayapura-logo.png">
+  <link rel="apple-touch-icon" href="assets/kotajayapura-logo.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="assets/js/data-dokumen.js"></script>
+  <script src="assets/js/store.js"></script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="font-sans bg-slate-50 text-slate-700 antialiased">
+
+  <div id="site-header"></div>
+  <script>
+    // Tandai kategori dokumen ini di navigasi
+    (function () {
+      const doc = JDIH.load().docs.find((d) => d.id === JDIH.param('id'));
+      if (doc) {
+        document.getElementById('site-header').dataset.active = doc.type;
+        document.title = doc.title + ' — JDIH Kota Jayapura';
+      }
+    })();
+  </script>
+
+  <div x-data="detailPage()">
+    <!-- Dokumen tidak ditemukan -->
+    <template x-if="!doc">
+      <main class="max-w-3xl mx-auto px-4 py-24 text-center">
+        <i class="fa-solid fa-file-circle-question text-5xl text-slate-300"></i>
+        <h1 class="mt-4 text-2xl font-extrabold text-navy-800">Dokumen tidak ditemukan</h1>
+        <p class="mt-2 text-slate-500">Dokumen mungkin telah dihapus atau tautannya salah.</p>
+        <a href="dokumen.html" class="mt-6 inline-block bg-navy-800 hover:bg-navy-900 text-white px-5 py-2.5 rounded">Kembali ke Daftar Dokumen</a>
+      </main>
+    </template>
+
+    <template x-if="doc">
+      <div>
+        <section class="bg-gradient-to-br from-navy-700 via-navy-800 to-navy-950 text-white">
+          <div class="max-w-6xl mx-auto px-4 py-10 text-center">
+            <nav class="text-sm text-white/70">
+              <a href="index.html" class="hover:text-white">Beranda</a>
+              <span class="mx-2">/</span>
+              <a :href="'dokumen.html?kategori=' + doc.type" class="hover:text-white" x-text="categoryName"></a>
+              <span class="mx-2">/</span>
+              <span class="text-white">Detail</span>
+            </nav>
+            <h1 class="mt-3 text-2xl sm:text-3xl font-black tracking-tight max-w-4xl mx-auto" x-text="doc.title"></h1>
+          </div>
+        </section>
+
+        <main class="max-w-6xl mx-auto px-4 py-10 grid lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2 space-y-8">
+            <!-- Metadata -->
+            <section class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-xl font-extrabold text-navy-800 pb-3 border-b border-slate-200">Informasi Dokumen</h2>
+              <dl class="mt-2 divide-y divide-slate-100 text-sm">
+                <template x-for="row in meta" :key="row[0]">
+                  <div class="grid sm:grid-cols-3 gap-1 py-3">
+                    <dt class="font-bold text-slate-500" x-text="row[0]"></dt>
+                    <dd class="sm:col-span-2 text-slate-800" x-text="row[1]"></dd>
+                  </div>
+                </template>
+                <div class="grid sm:grid-cols-3 gap-1 py-3">
+                  <dt class="font-bold text-slate-500">Status</dt>
+                  <dd class="sm:col-span-2">
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full" :class="statusClass(doc.status)" x-text="doc.status"></span>
+                    <template x-for="r in (doc.relasi || [])" :key="r">
+                      <p class="mt-1.5 text-slate-600" x-text="r"></p>
+                    </template>
+                  </dd>
+                </div>
+              </dl>
+            </section>
+
+            <!-- Dokumen contoh -->
+            <div x-show="doc.contoh" class="bg-amber-50 text-amber-700 text-sm rounded-lg px-5 py-4">
+              <i class="fa-solid fa-circle-info mr-1.5"></i>
+              Dokumen ini adalah <b>contoh ilustratif</b> untuk simulasi tampilan. Jenis dokumen ini belum dipublikasikan di sumber publik.
+            </div>
+
+            <!-- Abstrak -->
+            <section class="bg-white rounded-lg shadow-sm p-6" x-data="{ dasar: false }">
+              <h2 class="text-xl font-extrabold text-navy-800 pb-3 border-b border-slate-200">Abstrak</h2>
+              <p class="mt-4 leading-relaxed text-slate-600" x-text="doc.abstrak || doc.desc"></p>
+
+              <template x-if="doc.dasarHukum && doc.dasarHukum.length">
+                <div class="mt-5">
+                  <button @click="dasar = !dasar" class="text-sm font-bold text-navy-700 hover:underline">
+                    <span x-text="(dasar ? 'Sembunyikan' : 'Lihat') + ' dasar hukum (' + doc.dasarHukum.length + ')'"></span>
+                  </button>
+                  <ol x-show="dasar" x-transition.opacity class="mt-3 list-decimal pl-5 space-y-1 text-sm text-slate-600">
+                    <template x-for="(h, i) in doc.dasarHukum" :key="i"><li x-text="h"></li></template>
+                  </ol>
+                </div>
+              </template>
+
+              <p x-show="doc.catatan" class="mt-5 text-sm bg-brand-50 text-navy-800 rounded px-4 py-3">
+                <b>Catatan:</b> <span x-text="doc.catatan"></span>
+              </p>
+              <p x-show="doc.sourceUrl" class="mt-4 text-xs text-slate-500">
+                Sumber metadata: <a :href="doc.sourceUrl" target="_blank" rel="noopener" class="font-bold text-navy-700 hover:underline">JDIH BPK RI <i class="fa-solid fa-arrow-up-right-from-square ml-0.5"></i></a>
+              </p>
+            </section>
+
+            <!-- Pratinjau -->
+            <section class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-xl font-extrabold text-navy-800 pb-3 border-b border-slate-200">Pratinjau Dokumen</h2>
+              <template x-if="hasFile">
+                <div class="mt-4">
+                  <iframe :src="doc.file + '#view=FitH'" class="w-full h-[75vh] min-h-[480px] rounded-lg border border-slate-200 bg-slate-100" :title="'Pratinjau ' + doc.title"></iframe>
+                  <p class="mt-2 text-xs text-slate-500">Pratinjau tidak tampil? <a :href="doc.file" target="_blank" class="font-bold text-navy-700 hover:underline">Buka PDF di tab baru</a>.</p>
+                </div>
+              </template>
+              <template x-if="!hasFile">
+                <div class="mt-4 h-72 rounded-lg border-2 border-dashed border-slate-200 grid place-items-center text-center text-slate-400 p-6">
+                  <div>
+                    <i class="fa-solid fa-file-pdf text-5xl text-red-400"></i>
+                    <p class="mt-3 font-bold text-slate-500">Berkas belum tersedia</p>
+                    <p class="text-sm">Pratinjau PDF tampil di sini setelah berkas asli diunggah.</p>
+                  </div>
+                </div>
+              </template>
+            </section>
+          </div>
+
+          <aside class="space-y-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center gap-3">
+                <span class="w-11 h-11 shrink-0 rounded bg-red-50 text-red-600 grid place-items-center text-xl"><i class="fa-solid fa-file-pdf"></i></span>
+                <div class="min-w-0 text-sm">
+                  <p class="font-bold text-slate-800 truncate" x-text="hasFile ? doc.file.split('/').pop() : 'Belum ada berkas'"></p>
+                  <p class="text-slate-500" x-show="hasFile">
+                    <span x-text="JDIH.formatSize(doc.fileSize)"></span><span x-show="doc.pages"> · <span x-text="doc.pages"></span> halaman</span>
+                  </p>
+                </div>
+              </div>
+              <p class="mt-4 text-sm text-slate-500"><i class="fa-solid fa-download mr-1.5"></i><span x-text="JDIH.formatNumber(doc.downloads)"></span> kali diunduh</p>
+              <button @click="doc.downloads = JDIH.download(doc.id)"
+                      class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded">
+                <i class="fa-solid fa-file-arrow-down mr-2"></i>Unduh PDF
+              </button>
+              <button @click="share()" class="mt-3 w-full border border-slate-200 hover:border-navy-700 hover:text-navy-700 font-bold py-3 rounded">
+                <i class="fa-solid fa-link mr-2"></i>Salin Tautan
+              </button>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6" x-show="related.length">
+              <h3 class="text-lg font-extrabold text-navy-800 pb-3 border-b border-slate-200">Dokumen Terkait</h3>
+              <ul class="mt-2 divide-y divide-slate-100">
+                <template x-for="r in related" :key="r.id">
+                  <li class="py-3">
+                    <a :href="'detail.html?id=' + r.id" class="text-sm font-bold text-slate-800 hover:text-navy-700" x-text="r.title"></a>
+                    <p class="text-xs text-slate-500 mt-1" x-text="JDIH.formatDate(r.date)"></p>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </aside>
+        </main>
+      </div>
+    </template>
+  </div>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/layout.js"></script>
+
+  <script>
+    function detailPage() {
+      const db = JDIH.load();
+      const doc = db.docs.find((d) => d.id === JDIH.param('id')) || null;
+      const cat = doc ? db.categories.find((c) => c.code === doc.type) : null;
+      return {
+        doc,
+        categoryName: cat ? cat.name : (doc ? doc.type : ''),
+        get hasFile() { return !!(this.doc && this.doc.file && /^dokumen\//.test(this.doc.file)); },
+        get meta() {
+          const d = this.doc;
+          if (!d) return [];
+          return [
+            ['Jenis Dokumen', this.categoryName],
+            ['Nomor', d.number || '-'],
+            ['Tahun', d.year],
+            ['Tempat Penetapan', d.place || 'Jayapura'],
+            ['Tanggal Penetapan', JDIH.formatDate(d.date)],
+            ['Tanggal Pengundangan', d.dateUndang ? JDIH.formatDate(d.dateUndang) : ''],
+            ['Tanggal Berlaku', d.dateBerlaku ? JDIH.formatDate(d.dateBerlaku) : ''],
+            ['Sumber', d.source],
+            ['Subjek', d.subject],
+            ['Bidang Hukum', d.bidang ? d.bidang.charAt(0) + d.bidang.slice(1).toLowerCase() : ''],
+            ['Pemrakarsa', 'Pemerintah Kota Jayapura'],
+            ['Bahasa', 'Indonesia'],
+          ].filter((r) => r[1]);
+        },
+        related: doc ? db.docs.filter((d) => d.type === doc.type && d.id !== doc.id).sort(JDIH.byDateDesc).slice(0, 4) : [],
+        share() {
+          const toast = (m) => window.dispatchEvent(new CustomEvent('toast', { detail: m }));
+          const fail = () => toast('Gagal menyalin, salin tautan dari bilah alamat browser.');
+          try { navigator.clipboard.writeText(location.href).then(() => toast('Tautan dokumen disalin.'), fail); } catch (e) { fail(); }
+        },
+        statusClass(s) {
+          return { Berlaku: 'bg-emerald-50 text-emerald-700', Diubah: 'bg-amber-50 text-amber-700', Dicabut: 'bg-red-50 text-red-700' }[s] || 'bg-slate-100';
+        },
+      };
+    }
+  </script>
+</body>
+</html>
