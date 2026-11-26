@@ -4,7 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dokumen Hukum — JDIH Kota Jayapura</title>
-  <meta name="description" content="Daftar dokumen hukum Pemerintah Kota Jayapura">
+  <meta name="description" content="Daftar dokumen hukum Pemerintah Kota Jayapura dengan pencarian dan filter kategori, tahun, serta status berlaku.">
+  <!-- Open Graph / Twitter Card (pratinjau saat tautan dibagikan) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="JDIH Kota Jayapura">
+  <meta property="og:locale" content="id_ID">
+  <meta property="og:title" content="Dokumen Hukum — JDIH Kota Jayapura">
+  <meta property="og:description" content="Daftar dokumen hukum Pemerintah Kota Jayapura dengan pencarian dan filter kategori, tahun, serta status berlaku.">
+  <meta property="og:url" content="https://jdih.jayapurakota.go.id/dokumen.html">
+  <meta property="og:image" content="https://jdih.jayapurakota.go.id/assets/og-image.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Logo Kota Jayapura dan tampilan beranda JDIH Kota Jayapura">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dokumen Hukum — JDIH Kota Jayapura">
+  <meta name="twitter:description" content="Daftar dokumen hukum Pemerintah Kota Jayapura dengan pencarian dan filter kategori, tahun, serta status berlaku.">
+  <meta name="twitter:image" content="https://jdih.jayapurakota.go.id/assets/og-image.jpg">
   <link rel="icon" type="image/png" href="assets/kotajayapura-logo.png">
   <link rel="apple-touch-icon" href="assets/kotajayapura-logo.png">
 
@@ -98,15 +114,21 @@
         </div>
 
         <!-- Paginasi -->
-        <div x-show="pages > 1" x-cloak class="mt-8 flex flex-wrap items-center justify-center gap-2">
-          <button @click="go(page-1)" :disabled="page===1"
-                  class="w-10 h-10 rounded bg-white shadow-sm disabled:opacity-40"><i class="fa-solid fa-chevron-left"></i></button>
-          <template x-for="n in pages" :key="n">
-            <button @click="go(n)" class="w-10 h-10 rounded font-bold shadow-sm"
-                    :class="n===page ? 'bg-navy-700 text-white' : 'bg-white hover:text-navy-700'" x-text="n"></button>
-          </template>
-          <button @click="go(page+1)" :disabled="page===pages"
-                  class="w-10 h-10 rounded bg-white shadow-sm disabled:opacity-40"><i class="fa-solid fa-chevron-right"></i></button>
+        <div x-show="pages > 1" x-cloak class="mt-8 flex justify-center">
+            <nav class="flex flex-wrap items-center gap-1" x-show="pages > 1" aria-label="Paginasi">
+              <button @click="go(page-1)" :disabled="page===1" title="Sebelumnya" aria-label="Halaman sebelumnya"
+                      class="min-w-10 h-10 px-2 grid place-items-center rounded border border-slate-200 bg-white hover:text-navy-700 disabled:opacity-40 disabled:pointer-events-none"><i class="fa-solid fa-chevron-left"></i></button>
+              <template x-for="(n, i) in JDIH.pageList(page, pages)" :key="i + '-' + n">
+                <span>
+                  <span x-show="n==='…'" class="min-w-10 h-10 px-2 grid place-items-center text-slate-400 select-none">…</span>
+                  <button x-show="n!=='…'" @click="go(n)" x-text="n" :aria-current="n===page ? 'page' : null"
+                          class="min-w-10 h-10 px-2 grid place-items-center rounded border font-bold"
+                          :class="n===page ? 'bg-navy-700 border-navy-700 text-white' : 'bg-white border-slate-200 hover:text-navy-700'"></button>
+                </span>
+              </template>
+              <button @click="go(page+1)" :disabled="page===pages" title="Berikutnya" aria-label="Halaman berikutnya"
+                      class="min-w-10 h-10 px-2 grid place-items-center rounded border border-slate-200 bg-white hover:text-navy-700 disabled:opacity-40 disabled:pointer-events-none"><i class="fa-solid fa-chevron-right"></i></button>
+            </nav>
         </div>
       </section>
 

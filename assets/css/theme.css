@@ -62,6 +62,7 @@ html.dark .hover\:text-red-600:hover { color: #f87171; }
 html.dark .border-slate-100,
 html.dark .border-slate-200          { border-color: var(--dk-line); }
 html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--dk-line); }
+html.dark .border-white              { border-color: var(--dk-surface); } /* bingkai avatar profil */
 html.dark .border-navy-700,
 html.dark .border-navy-800           { border-color: var(--dk-accent); }
 html.dark .border-red-200            { border-color: rgba(248, 113, 113, .4); }

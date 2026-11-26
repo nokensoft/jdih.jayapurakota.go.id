@@ -88,7 +88,7 @@
     if (!s || !s.id) return null;
     const u = load().users.find((x) => x.id === s.id && x.active);
     if (!u) { logout(); return null; }
-    return { id: u.id, name: u.name, username: u.username, role: u.role, roleLabel: (ROLES[u.role] || {}).label || u.role };
+    return { id: u.id, name: u.name, username: u.username, role: u.role, roleLabel: (ROLES[u.role] || {}).label || u.role, loginAt: s.at };
   }
 
   // ---------- Utilitas ----------
@@ -102,11 +102,19 @@
   const param = (name) => new URLSearchParams(location.search).get(name);
   const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '');
   const uid = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  // Daftar tombol paginasi: selalu halaman 1 & terakhir, halaman di sekitar halaman aktif, sisanya '…'
+  // contoh (total 10): hal.1 -> 1 2 3 4 … 10 · hal.6 -> 1 … 5 6 7 … 10 · hal.10 -> 1 … 7 8 9 10
+  function pageList(current, total) {
+    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, '…', total];
+    if (current >= total - 2) return [1, '…', total - 3, total - 2, total - 1, total];
+    return [1, '…', current - 1, current, current + 1, '…', total];
+  }
   const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 
   window.JDIH = {
     load, save, reset, login, logout, currentUser,
-    formatDate, formatNumber, formatSize, param, byDateDesc, uid, escapeHtml,
+    formatDate, formatNumber, formatSize, param, byDateDesc, uid, escapeHtml, pageList,
     STATUSES, ROLES,
     // Kredensial simulasi untuk tombol "isi otomatis" di halaman login
     DEMO_USERS: SEED_USERS.map((u) => ({ role: u.role, label: ROLES[u.role].label, username: u.username, password: u.password })),

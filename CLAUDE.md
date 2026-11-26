@@ -17,7 +17,7 @@ jdih.jayapurakota.go.id/   # folder ini
 ├── privasi.html            # Kebijakan Privasi + lihat/hapus preferensi di browser
 ├── status.html             # Status Sistem (simulasi: cek latensi, riwayat 90 hari, insiden)
 ├── login.html              # Login simulasi + tombol isi otomatis (admin / jdih2026, operator / operator2026)
-├── admin.html              # Dasbor: #ringkasan, #dokumen (admin & operator); #kategori, #pengguna, #pengaturan (admin)
+├── admin.html              # Dasbor: #ringkasan, #dokumen, #profil, #dokumentasi (admin & operator); #kategori, #pengguna, #pengaturan (admin). Menu akun (profil, sidebar, lihat situs, keluar) = dropdown profil kanan atas
 ├── dokumen/                # PDF asli: <jenis>/<tahun>/<jenis>-<nomor>-<tahun>.pdf (+ README.md daftar sumber)
 ├── assets/
 │   ├── js/data-dokumen.js      # Data dokumen (window.JDIH_DOCS) — Perda/Perwali asli dari JDIH BPK + contoh
@@ -28,6 +28,7 @@ jdih.jayapurakota.go.id/   # folder ini
 │   ├── css/theme.css           # Pemetaan warna mode gelap (html.dark) — tambah aturan di sini jika memakai kelas warna baru
 │   ├── kotajayapura-logo.png   # Logo utama + favicon
 │   ├── nokensoft-logo.png      # Logo "Powered by Nokensoft.com" (footer publik & admin)
+│   ├── og-image.jpg            # Gambar pratinjau tautan (Open Graph) 1200×630: logo kota + screenshot beranda, tanpa teks
 │   └── mockup-konsep-awal.png  # Acuan warna & tata letak
 └── _project_management/    # Administrasi proyek (lihat README.md di dalamnya)
     ├── 00-template/        # Kop surat Nokensoft
@@ -53,6 +54,12 @@ jdih.jayapurakota.go.id/   # folder ini
   sesi (`jdih_auth_v1`) hanya menyimpan id dan selalu dicocokkan ke daftar pengguna. Pengaman: admin tidak bisa
   menghapus/menurunkan/menonaktifkan diri sendiri dan minimal harus ada satu admin aktif. Kata sandi disimpan apa adanya (simulasi). Unduh PDF membuka berkas asli (dokumen contoh: simulasi);
   unggah berkas di form admin hanya mencatat nama berkas.
+- **Konvensi UI panel admin:** formulir tambah/ubah tampil sebagai halaman di dalam tab (menggantikan daftar, ada tombol
+  "Kembali ke daftar"), **bukan modal**. Modal hanya untuk konfirmasi lewat `ask(judul, pesan, onOk, label, tone)`
+  dengan tone `danger` (hapus), `warning` (buang perubahan/reset), `info` (keluar). Batal pada formulir yang sudah
+  diubah selalu meminta konfirmasi.
+- **Dokumentasi panel** (`admin.html#dokumentasi`, tautan di footer admin): isi panduan ada di array `guide` di skrip
+  admin.html. **Perbarui `guide` setiap kali fitur panel berubah.**
 - Topbar memakai teks "Jaringan Dokumentasi dan Informasi Hukum"; jam layanan sengaja tidak ditampilkan.
 - Arahan desain yang sudah disepakati — pertahankan kecuali diminta berubah:
   - Warna & tata letak mengikuti `assets/mockup-konsep-awal.png`: topbar navy, header putih, navbar biru,
